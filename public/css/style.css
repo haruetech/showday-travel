@@ -469,3 +469,10 @@ body.big .leg,body.big .alts{font-size:14px}
   .mapbox:has(svg){min-height:420px}
 }
 @media (min-width:1100px){.wrap.wide{max-width:1360px}}
+
+/* v96 그림 v3 */
+.hth i.g3{font-size:0}.hth i.g3 .tic{width:62%;height:62%;filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.25))}
+.hth i.g3 u{font-size:10px}
+.tcb{display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;border-radius:50%;vertical-align:-6px;margin-right:4px}.tcb .tic{width:68%;height:68%}
+.sthero .them{font-size:0}.sthero .them .tic{width:60px;height:60px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.28))}
+.sthero.th .them .tic{position:static;inset:auto;display:block;width:46px;height:46px}.sthero.th .sttx{padding-right:70px}
