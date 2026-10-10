@@ -1,7 +1,7 @@
 /* 여행 중 화면: 길잡이, 위치, 지금 위치에서 가는 시간, 시각 맞추기 */
 function pickDay(){const P_=PLAN;let t=P_.days.find(d=>isTravelDay(d));if(t)return t.n;t=P_.days.find(d=>lvState(d).cur);return t?t.n:1;}
 function tvTop(d){
-  if(!UI.travel)return `<div class="tvstart"><button class="btn" data-act="travelOn">▶ 여행 시작하기</button><span class="meta">여행 중에는 지금 일정과 다음 코스를 안내해요</span></div>`;
+  if(!UI.travel)return `<div class="tvstart"><button class="btn" data-act="travelOn">▶ 일정 시작</button><span class="meta">오늘 여행이면 지금 시각부터 일정 시간을 다시 맞추고, 지금·다음 코스를 안내해요</span></div>`;
   const st=lvState(d),c0=st.cur&&st.cur.e,trav=isTravelDay(d);if(UI.clk==null&&!trav&&c0)UI.clk=c0.t0+5;
   const g=guideSay(st),x=st.nx&&st.nx.e,nt=LV().notif!==false;
   UI._near=UI.nearOn?nearCands(d,st):null;UI.lvSig=g.k+(c0?c0.title:'');UI._cur=st.cur?st.cur.i:-1;UI._nx=st.nx?st.nx.i:-1;UI.sel=UI._cur;

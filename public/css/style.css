@@ -1,21 +1,21 @@
 /* 레이아웃: 홈(검색) → 질문 한 화면씩 → 결과 3탭(일정·지도·비용) + 하단 일정 수정 시트. PC는 일정·지도·비용 요약 */
 :root{
-  --bg:#FFFCF8; --surface:#FFFFFF; --ink:#2B2119; --muted:#7B6C5F; --line:#EBDFD2;
-  --accent:#D2691E; --accent-soft:#FBEADB; --accent-ink:#FFFFFF;
+  --bg:#FAFAFD; --surface:#FFFFFF; --ink:#1F2233; --muted:#666B80; --line:#E2E4EE;
+  --accent:#4A47B8; --accent-soft:#ECEBFA; --accent-ink:#FFFFFF;
   --good:#2F7D4F; --bad:#B3261E;
-  --c1:#D2691E; --c2:#5E8396; --c3:#8AA05C; --c4:#B58A4A; --c5:#8C6F9E;
+  --c1:#4A47B8; --c2:#5E8396; --c3:#8AA05C; --c4:#B58A4A; --c5:#8C6F9E;
   --font:'Gothic A1','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#17120E; --surface:#211A15; --ink:#F3EBE3; --muted:#A89888; --line:#3A2F27;
-  --accent:#E8873F; --accent-soft:#3A2616; --accent-ink:#1A1109;
+  --bg:#12131C; --surface:#1B1D2A; --ink:#EDEEF6; --muted:#9A9DB3; --line:#2E3144;
+  --accent:#9B98F2; --accent-soft:#262649; --accent-ink:#12122A;
   --good:#6BC18B; --bad:#F2877F;
-  --c1:#E8873F; --c2:#7FA6BA; --c3:#A9C07A; --c4:#D3A85F; --c5:#B79AC8; color-scheme:dark}}
+  --c1:#9B98F2; --c2:#7FA6BA; --c3:#A9C07A; --c4:#D3A85F; --c5:#B79AC8; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#17120E; --surface:#211A15; --ink:#F3EBE3; --muted:#A89888; --line:#3A2F27;
-  --accent:#E8873F; --accent-soft:#3A2616; --accent-ink:#1A1109;
+  --bg:#12131C; --surface:#1B1D2A; --ink:#EDEEF6; --muted:#9A9DB3; --line:#2E3144;
+  --accent:#9B98F2; --accent-soft:#262649; --accent-ink:#12122A;
   --good:#6BC18B; --bad:#F2877F;
-  --c1:#E8873F; --c2:#7FA6BA; --c3:#A9C07A; --c4:#D3A85F; --c5:#B79AC8; color-scheme:dark}
+  --c1:#9B98F2; --c2:#7FA6BA; --c3:#A9C07A; --c4:#D3A85F; --c5:#B79AC8; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.55;padding-inline:16px;padding-block:0 100px;-webkit-text-size-adjust:100%}
 button,input,select{font:inherit;color:inherit}
@@ -359,7 +359,7 @@ body.big .leg,body.big .alts{font-size:14px}
 .hs{position:relative;display:block;aspect-ratio:.86/1;padding:0;border:0;border-radius:12px;overflow:hidden;box-shadow:0 5px 12px rgba(27,42,85,.2);background:#334}
 .hs svg{position:absolute;inset:0;width:100%;height:100%}.hs::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,16,40,0) 38%,rgba(10,16,40,.7) 100%)}
 .hs .tx{position:absolute;left:0;right:0;bottom:0;z-index:1;display:flex;flex-direction:column;align-items:flex-start;gap:0;padding:0 6px 6px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.6);text-align:left;line-height:1.2}.hs b{font-size:14px;font-weight:800}.hs small{font-size:10.5px;opacity:.95}.hs i{font-style:normal;font-size:10.5px;font-weight:700;color:#FFE0A8}
-.hs.now{box-shadow:0 0 0 2.5px var(--accent),0 6px 14px rgba(210,105,30,.35)}.hs em{position:absolute;z-index:2;top:5px;left:5px;font-style:normal;font-size:10.5px;font-weight:800;color:#fff;background:var(--accent);border-radius:999px;padding:1px 7px}
+.hs.now{box-shadow:0 0 0 2.5px var(--accent),0 6px 14px rgba(74,71,184,.35)}.hs em{position:absolute;z-index:2;top:5px;left:5px;font-style:normal;font-size:10.5px;font-weight:800;color:#fff;background:var(--accent);border-radius:999px;padding:1px 7px}
 .hlab .meta{font-weight:500;margin-left:4px}
 .sthero.sn{height:84px}.sthero.sn svg{position:absolute;inset:0;width:100%;height:100%}.sntabs{display:flex;gap:6px;margin:0 0 8px}.sntabs .chip{flex:1;min-height:38px;font-weight:700}
 .sb{font-size:12px;font-weight:800;color:var(--muted)}.sb.now{color:#D4402A}.sb.soon{color:var(--accent)}.stc .sub{font-size:13px;color:var(--muted);line-height:1.4}
@@ -476,3 +476,11 @@ body.big .leg,body.big .alts{font-size:14px}
 .tcb{display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;border-radius:50%;vertical-align:-6px;margin-right:4px}.tcb .tic{width:68%;height:68%}
 .sthero .them{font-size:0}.sthero .them .tic{width:60px;height:60px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.28))}
 .sthero.th .them .tic{position:static;inset:auto;display:block;width:46px;height:46px}.sthero.th .sttx{padding-right:70px}
+
+/* v97 버튼 작게·일정 시작 */
+.fab{height:36px;padding:0 14px;font-size:13px;font-weight:700;bottom:calc(70px + env(safe-area-inset-bottom,0px))}
+.bar{padding:8px 16px calc(8px + env(safe-area-inset-bottom,0px))}
+.bar .btn{min-height:42px;font-size:14px;font-weight:700;padding:0 14px}
+.bar .btn.ghost{font-size:13px;font-weight:600}
+@media(min-width:700px){.bar .in{max-width:520px}.bar .btn{flex:1 1 0}.bar .btn.ghost{flex:0 0 auto}}
+.tvstart .btn{min-height:44px;font-size:15px}
