@@ -156,9 +156,10 @@ function parseSay(raw,one){const txt=(raw||'').replace(/\s+/g,' ').trim(),acts=[
   const C=cityOf(),np=s=>s.replace(/[\s·()\-]/g,'');
   const clauses=one?[txt]:txt.split(/[.,!?\n]| 그리고 | 그래서 | 그러니까 | 근데 | 그런데 |(?<=는데|인데|니까|라서) /).map(s=>s.trim()).filter(Boolean);
   const EVK=/(행사|공연|콘서트|약속|예약|미팅|모임|축제|경기|결혼식|파티|티켓|관람|전시회|페스티벌|버스킹|식사 약속|회식)/;
-  const findPl=c=>{const n=np(c);return C.places.filter(p=>{const nm=np(p.name);return n.includes(nm)||(nm.length>=5&&n.includes(nm.slice(0,4)));});};
+  const SUF=/(해수욕장|해변|박물관|미술관|공원|시장|전망대|아쿠아리움|타워|폭포|수목원|둘레길|케이블카|스카이워크|사찰|마을)$/,keyOf=nm=>{const k=np(nm).replace(SUF,'');return k.length>=3?k:'';},aliasN={};C.places.forEach(p=>{const k=keyOf(p.name);if(k)aliasN[k]=(aliasN[k]||0)+1;});
+  const findPl=c=>{const n=np(c);return C.places.filter(p=>{const nm=np(p.name),k=keyOf(p.name);return n.includes(nm)||(nm.length>=5&&n.includes(nm.slice(0,4)))||(k&&aliasN[k]===1&&n.includes(k));});};
   clauses.forEach(c=>{let hit=false;const ek=c.match(EVK);
-    if(!ek&&(/(지금|현재)\s*(시간|시각|부터|바로|출발|시작|떠|나가)|지금\s*(출발|시작|가자|갈게)/.test(c)||(/(지금|현재)/.test(c)&&/(시간|시각)/.test(c)&&/(적용|맞춰|기준)/.test(c)))){const st=Math.ceil(nowMin()/5)*5,loc=/위치|여기|내\s*위치/.test(txt);
+    if(!ek&&(/(지금|현재)\s*(시간|시각|부터|바로|출발|시작|떠|나가)|지금\s*(출발|시작|가자|갈게)|(지금|현재)\s*(내\s*)?(위치|여기)/.test(c)||(/(지금|현재)/.test(c)&&/(시간|시각)/.test(c)&&/(적용|맞춰|기준)/.test(c)))){const st=Math.ceil(nowMin()/5)*5,loc=/위치|여기|내\s*위치/.test(txt);
       acts.push({k:'now',day,st,loc,label:`${day}일차를 지금(${hm(st)})부터 시작${loc?' · 지금 내 위치에서 출발':''}`});hit=true;}
     if(ek&&/(취소|빼\s*줘|빼\s*고|없애|삭제|지워)/.test(c)&&!findTimes(c,'ev').length&&(S.fixedEv||[]).some(f=>f.day===day)){acts.push({k:'fxdel',day,label:`${day}일차 행사 일정 빼기`});hit=true;}
     else if(ek){const ts=findTimes(c,'ev');if(ts.length){const t=ts[0];let dur=ts.length>1&&ts[1]>t?ts[1]-t:0;
@@ -167,27 +168,29 @@ function parseSay(raw,one){const txt=(raw||'').replace(/\s+/g,' ').trim(),acts=[
     const early=findPl(c).length?/일찍|빨리\s*시작|아침부터/.test(c):/오후.{0,8}오전|오전(으로|에)\s*(다|몰|옮|당|해|바꿔|끝|하고)|일찍|앞당|당겨|아침부터|빨리\s*시작/.test(c);
     if(early||(!ek&&/(시작|출발|나가|나갈|움직|부터)/.test(c)&&findTimes(c,'st').length)){let st=480;const ts=!ek?findTimes(c,'st'):[];if(ts.length&&ts[0]<12*60)st=ts[0];
       acts.push({k:'start',day,st,label:`${day}일차를 ${hm(st)}에 시작 — 오후 일정을 앞으로 당겨요`});hit=true;}
-    const dl=c.match(/(\d+)\s*(분|시간)\s*(정도\s*)?(늦|지연|밀|더\s*(있|머))/);
-    if(dl||/늦어졌|늦었|지체/.test(c)){const mn=dl?(dl[2]==='시간'?+dl[1]*60:+dl[1]):30;acts.push({k:'delay',day,min:mn,label:`${day}일차를 ${mn>=60?mn/60+'시간':mn+'분'} 늦춰서 다시 계산`});hit=true;}
-    if(/비\s*(가|도)?\s*(오|와|올|내)|우천|실내/.test(c)&&!/맑/.test(c)){acts.push({k:'rain',label:'비 오는 날 — 실내 위주로'});hit=true;}
-    if(/피곤|힘들|지쳐|쉬엄|천천히|여유롭게|졸려|졸린/.test(c)){acts.push({k:'tired',label:'여유롭게 — 덜 걷고 쉬어가요'});hit=true;}
-    if(/택시.{0,6}(말고|빼|싫|대신|안)|버스로|대중교통으로/.test(c)){acts.push({k:'notaxi',label:'택시 대신 대중교통'});hit=true;}
-    if(/맛집/.test(c)&&/(중심|위주|많이|먹으러)/.test(c)){acts.push({k:'food',label:'맛집 중심으로'});hit=true;}
-    if(/(카페|커피)/.test(c)&&/(가|쉬|넣|추가|마시)/.test(c)&&!/(빼|제외)/.test(c)&&!findPl(c).length){acts.push({k:'cafe',day,label:`${day}일차에 카페 휴식 추가`});hit=true;}
+    let mn=0;const dl=c.match(/(\d+)\s*(분|시간)\s*(정도\s*)?(늦|지연|밀|더\s*(있|머))/);
+    if(dl)mn=dl[2]==='시간'?+dl[1]*60:+dl[1];
+    else{const kk=c.match(/(한|두|세|네)\s*시간\s*(정도\s*)?(반\s*)?(늦|지연|밀|더)/);if(kk)mn=({한:1,두:2,세:3,네:4})[kk[1]]*60+(kk[3]?30:0);else if(/반\s*시간\s*(정도\s*)?(늦|지연|밀|더)/.test(c))mn=30;}
+    if(mn||/늦어졌|늦었|지체|늦잠|지각|밀렸|막혀|막혔|체증|정체|놓쳤|연착|지연됐|늦게\s*(시작|출발|나가|일어)/.test(c)){if(!mn)mn=/늦잠|늦게/.test(c)?60:30;acts.push({k:'delay',day,min:mn,label:`${day}일차를 ${mn>=60?mn/60+'시간':mn+'분'} 늦춰서 다시 계산`});hit=true;}
+    if(/비\s*(가|도|는)?\s*(오|와|올|내|온|옴|예보|소식|때문)|소나기|장마|폭우|우산|우천|비바람|궂|날씨\s*(가|도)?\s*(안\s*좋|나쁘|별로|걱정)|눈\s*(이|도)?\s*(오|와|올|내|많이)|폭설|눈길|태풍|한파|폭염|무더위|미세먼지|황사|실내|너무\s*(더워|더운|추워|추운|덥|춥)|더워서|추워서/.test(c)&&!/맑|화창|비\s*(안|없)/.test(c)){acts.push({k:'rain',label:/비|소나기|장마|폭우|우산|우천/.test(c)?'비 오는 날 — 실내 위주로':'날씨 때문에 — 실내 위주로'});hit=true;}
+    if(/피곤|힘들|힘드|지쳐|지쳤|지친|피로|쉬엄|천천히|여유롭게|느긋|졸려|졸린|졸리|다리\s*(가|도)?\s*아|발\s*(이|도)?\s*아|아파|무릎|허리|걷기\s*(싫|힘|부담)|걷는\s*(거|게)?\s*(싫|힘|부담)|많이\s*걸|덜\s*걷|적게\s*걷|숨\s*차|쉬고\s*싶|쉬었으면|빡빡하|널널|칭얼|보채/.test(c)){acts.push({k:'tired',label:'여유롭게 — 덜 걷고 쉬어가요'});hit=true;}
+    if(/택시.{0,6}(말고|빼|싫|대신|안)|(버스|지하철|전철|대중교통)\s*(으로|로|만|이용|타고|탈|타|이동)|택시\s*(비|값|요금)\s*(비싸|아까|부담)/.test(c)){acts.push({k:'notaxi',label:'택시 대신 대중교통'});hit=true;}
+    if(/맛집|먹방|식도락|맛\s*기행|먹거리|배고|출출|밥\s*먼저|식당\s*먼저/.test(c)&&/(중심|위주|많이|먹으러|여행|투어|코스|바꿔|해줘|해\s*줘|넣|먼저|배고|출출)/.test(c)){acts.push({k:'food',label:'맛집 중심으로'});hit=true;}
+    if(/(카페|커피|차\s*한\s*잔|디저트|브런치|빵집)/.test(c)&&/(가|쉬|넣|추가|마시|싶|먹|들러)/.test(c)&&!/(빼|제외)/.test(c)&&!findPl(c).length){acts.push({k:'cafe',day,label:`${day}일차에 카페 휴식 추가`});hit=true;}
     const pls=findPl(c);const n_=np(c),ix=p=>{const nm=np(p.name),k=n_.indexOf(nm);return k>=0?k:n_.indexOf(nm.slice(0,4));};pls.sort((p,q)=>ix(p)-ix(q));let aft=false;
     if(pls.length>=2&&!ek&&/(다음|뒤에|이후)/.test(c)){const A=pls[0],B=pls[1];if(A.cat!=='식당'&&A.cat!=='카페'&&B.cat!=='식당'&&B.cat!=='카페'){const fr=/(오전|아침|먼저|처음|첫)/.test(c);acts.push({k:'after',a:A.id,b:B.id,day,front:fr,label:fr?`${day}일차 오전에 '${A.name}' → '${B.name}' 순서로 넣기`:`'${B.name}'을(를) '${A.name}' 바로 다음에 넣기`});hit=true;aft=true;}}
-    if(pls.length&&!ek&&!aft){const rm=/(빼|제외|취소|안\s*갈|가지\s*않|말고|스킵|건너|지워)/.test(c);
+    if(pls.length&&!ek&&!aft){const rm=/(빼|제외|취소|안\s*갈|안\s*가|가지\s*않|말고|스킵|건너|지워|패스|생략|없애|삭제|그만|싫)/.test(c);
       pls.slice(0,3).forEach(p=>{if(rm){if(p.cat!=='식당'&&p.cat!=='카페'){acts.push({k:'rm',id:p.id,label:`'${p.name}' 일정에서 빼기`});hit=true;}}
-        else if(/(넣|추가|가고\s*싶|가자|가볼|들러|방문|가요|갈래|바꿔|옮겨|당겨|미뤄|앞으로|뒤로|해줘|해 줘|하고\s*싶)/.test(c)){
+        else if(/(넣|추가|포함|끼워|껴|가고\s*싶|가보고|가자|가볼|가봐|들러|들를|방문|가요|갈래|갈게|보고\s*싶|구경|바꿔|옮겨|당겨|미뤄|앞으로|뒤로|해줘|해 줘|하고\s*싶)/.test(c)){
           const fr=/(오전|먼저|아침|처음|첫|앞으로|당겨)/.test(c),bk=/(오후|저녁|나중|마지막|뒤로|미뤄)/.test(c);
-          if(!fr&&!bk&&!/(넣|추가|가고\s*싶|가자|가볼|들러|방문|가요|갈래)/.test(c))return;
+          if(!fr&&!bk&&!/(넣|추가|포함|끼워|껴|가고\s*싶|가보고|가자|가볼|가봐|들러|들를|방문|가요|갈래|갈게|보고\s*싶|구경)/.test(c))return;
           const pdi=PLAN.days.findIndex(z=>z.ev.some(e=>e.kind==='place'&&e.p&&e.p.id===p.id)),dd=(pdi>=0&&(fr||bk)&&!dm)?pdi+1:day;
           acts.push({k:'add',id:p.id,day:dd,front:fr&&!bk,label:fr&&!bk?`'${p.name}' ${dd}일차 오전(맨 앞)으로`:bk?`'${p.name}' ${dd}일차 뒤쪽(오후)으로`:`'${p.name}' ${dd}일차에 넣기`});hit=true;}});}
     if(!hit)miss.push(c);});
   if(!one&&miss.length){const r2=parseSay(raw.replace(/[.,!?]/g,' '),true);if(r2.acts.length>=acts.length&&r2.miss.length<miss.length)return r2;}
   return{acts,miss,day};}
 function vprev(){const r=parseSay(UI.vtext);if(!UI.vtext||!UI.vtext.trim())return '<p class="meta">위 칸에 쓰거나 🎤로 말하면, 이렇게 바꿀 거라고 먼저 보여드려요.</p>';
-  return (r.acts.length?`<p class="meta" style="margin:0 0 6px">이렇게 바꿀게요</p>`+r.acts.map(a=>`<div class="vp">✓ ${esc(a.label)}</div>`).join(''):'<p class="meta">아직 알아듣지 못했어요. 시간·행사, 일찍 시작, 늦어짐, 비, 피곤, 장소 빼기/넣기를 말해 보세요.</p>')
+  return (r.acts.length?`<p class="meta" style="margin:0 0 6px">이렇게 바꿀게요</p>`+r.acts.map(a=>`<div class="vp">✓ ${esc(a.label)}</div>`).join(''):'<p class="meta">아직 알아듣지 못했어요. 시간·행사, 일찍/늦게 시작, 늦어짐, 비·날씨, 피곤·다리 아픔, 교통수단, 맛집·카페, 장소 빼기/넣기를 말해 보세요.</p>')
    +(r.miss.length&&r.acts.length?`<p class="meta" style="margin-top:6px">알아듣지 못한 부분: ${esc(r.miss.join(' / '))}</p>`:'');}
 function applySay(){const r=parseSay(UI.vtext);if(!r.acts.length)return;const A=r.acts;
   const edit=A.some(a=>a.k==='rm'||a.k==='add'||a.k==='after'),flag=A.some(a=>['rain','tired','food'].includes(a.k));
