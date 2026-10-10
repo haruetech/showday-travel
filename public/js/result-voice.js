@@ -87,7 +87,7 @@ function preCheck(){const P_=PLAN,w=[],ok=[];
   if(P_.cap>0){if(P_.T.total>P_.cap)w.push('예상 비용 '+won(P_.T.total)+'이 예산 '+won(P_.cap)+'을 넘어요.');else ok.push('예상 비용이 예산 안이에요.');}
   if(S.type==='stay'&&!S.booked)w.push('숙소를 아직 예약 전으로 표시했어요.');
   if(P_.trip&&P_.trip.hi>0)w.push('왕복 교통편(KTX·항공 등) 예매 여부를 확인하세요.'+(homeTr()?' 마지막 날 귀가는 '+hm(S.depart)+' 출발로 잡혀 있어요(전날 저녁·당일 알림).':''));
-  const api=['날씨(비·더위) · 기상청','장소 실제 운영시간·휴무 · 관광공사','열차·항공 지연·결항, 버스 도착','미세먼지 · 에어코리아'];
+  const api=[...(window.SD_WEATHER?[]:['날씨(비·더위) · 기상청']),'장소 실제 운영시간·휴무 · 관광공사','열차·항공 지연·결항, 버스 도착','미세먼지 · 에어코리아'];
   return{w,ok,api};}
 function viewGlance(){const P_=PLAN;let tot=0,done=0,nxt=null;
   P_.days.forEach(d=>d.ev.forEach(e=>{if(CHECKABLE.includes(e.kind)){tot++;if(CHK[ckey(d.n,e)])done++;else if(!nxt)nxt=ckey(d.n,e);}}));

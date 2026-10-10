@@ -450,3 +450,9 @@ body.big .leg,body.big .alts{font-size:14px}
 .kmk.m3{background:var(--c3)}.kmk.m2{background:var(--c2);border-radius:7px}.kmk.nr{background:#fff;color:var(--ink);border-color:var(--accent)}
 .kmk.on{border-color:var(--ink);transform:scale(1.25)}
 .kme{width:16px;height:16px;border-radius:50%;background:#2f6fed;border:3px solid #fff;box-shadow:0 0 0 4px rgba(47,111,237,.25)}
+
+/* v94 날씨 안내 */
+.wxb{display:flex;align-items:center;gap:10px;margin:8px 0;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:var(--surface);font-size:14px}
+.wxb .wxi{font-size:24px;line-height:1}.wxb>div{flex:1;min-width:0}.wxb .chip{flex:none;white-space:nowrap}
+.wxb.bad{border-color:#e0a24a;background:#fff7e8}
+.wxl{margin:-2px 0 8px;padding:8px 12px;border-radius:12px;background:#eaf2ff;font-size:14px}
