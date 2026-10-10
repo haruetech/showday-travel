@@ -15,7 +15,7 @@ function afterKidFlags(){const mp=new Set(S.mealPref);if(S.kidmeal)mp.add('kid')
 function doCopy(t){(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('일정을 복사했어요')).catch(()=>{UI.sheet={t:'copy',text:t};render(true);});}
 /* 첫 화면 클릭 기록: window.SD_TRACK 이 있을 때만(서버 배포판). 개인정보 없이 버튼 종류·값만 보냄 */
 function sdTrack(e,v){try{if(window.SD_TRACK&&navigator.sendBeacon)navigator.sendBeacon(window.SD_TRACK,new Blob([JSON.stringify({e,v:v||''})],{type:'application/json'}));}catch(x){}}
-document.addEventListener('click',ev=>{const b=ev.target.closest('[data-act]');if(!b||b.tagName==='INPUT')return;const a=b.dataset.act,k=b.dataset.k,v=b.dataset.v;sdTrack(a,v||b.dataset.c);
+document.addEventListener('click',ev=>{const target=ev.target instanceof Element?ev.target:ev.target?.parentElement;const b=target?.closest('[data-act]');if(!b||b.tagName==='INPUT')return;const a=b.dataset.act,k=b.dataset.k,v=b.dataset.v;sdTrack(a,v||b.dataset.c);
   const auto=()=>{if(UI.view==='wizard'&&curStep().auto){render();setTimeout(nextStep,140);}else render(true);};
   switch(a){
    case 'back':if(UI.view==='stays'&&UI.stv==='res'){UI.stv='pick';render();}else if(UI.view==='wizard')prevStep();else if(UI.view==='result'){UI.view='wizard';UI.step=active().slice(-1)[0].id;render();}else{UI.view='home';UI.sheet=null;render();}window.scrollTo(0,0);break;
