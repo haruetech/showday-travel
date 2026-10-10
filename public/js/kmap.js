@@ -34,8 +34,8 @@ function draw(el,day){
   map.setBounds(bounds,50,50,50,50);
   setTimeout(()=>{if(el.isConnected&&!el.querySelector('img'))fallback(el,day);},4000);}
 function after(){
-  if(!window.SD_KAKAO||UI.view!=='result'||UI.rtab!=='map')return;
-  const el=document.getElementById('kmap');if(!el)return;
+  if(!window.SD_KAKAO||UI.view!=='result'||!['plan','map'].includes(UI.rtab))return;
+  const el=document.getElementById('kmap');if(!el||!el.offsetWidth)return;
   const day=PLAN&&PLAN.days[UI.day-1];if(!day)return;
   const to=new Promise((_,no)=>setTimeout(()=>no(new Error('timeout')),6000));
   Promise.race([loadSdk(),to]).then(()=>{const cur=document.getElementById('kmap');if(cur)draw(cur,day);}).catch(er=>{try{console.warn('[kmap]',er&&er.message,'- 카카오 콘솔 > 플랫폼 > Web 에 이 사이트 주소가 등록됐는지, JavaScript 키가 맞는지 확인');}catch(_){}fallback(document.getElementById('kmap'),day);});}
