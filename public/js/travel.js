@@ -6,7 +6,7 @@ function tvTop(d){
   const g=guideSay(st),x=st.nx&&st.nx.e,nt=LV().notif!==false;
   UI._near=UI.nearOn?nearCands(d,st):null;UI.lvSig=g.k+(c0?c0.title:'');UI._cur=st.cur?st.cur.i:-1;UI._nx=st.nx?st.nx.i:-1;UI.sel=UI._cur;
   return `<div class="gsticky"><div class="guide"><div class="gface">${guideSvg}<small>하루 길잡이</small></div><div class="gbub" role="status">${g.t}</div></div>${tvStrip(st)}</div><div class="tvtop">
-  <div class="lvprog">${st.done}/${st.L.length} 완료 · <button class="lnk" data-act="travelOff">계획으로 돌아가기</button></div>
+  <div class="lvprog">${st.done}/${st.L.length} 완료 · <button class="lnk" data-act="stTimeNow" data-n="${UI.day}">▶ 지금부터 일정 시작</button> · <button class="lnk" data-act="travelOff">계획으로 돌아가기</button></div>
   ${x?`<div class="lvcard nxt"><small>다음</small><b>${esc(x.title)}${smp(x.p)}</b><span class="meta">${hm(x.t0)} 시작 · ${x.leg?legLab(x.leg)+' 약 '+x.leg.min+'분 · '+legCost(x.leg):''}</span><a href="${mapUrl(x.p)}" target="_blank" rel="noopener">카카오맵 길찾기</a></div>`:''}
   ${syncHtml(d)}${hereHtml(st)}
   <div class="lvset">${nearBtn()} <button class="geob${UI.geo||UI.geoWant?' on':''}" data-act="geoTog">${UI.geo||UI.geoWant?'📍 내 위치 켜짐 · 끄기':'📍 내 위치로 안내 받기'}</button>${UI.geo||UI.geoWant?'':'<span class="meta"> 허용하면 지도에 내 위치가 보이고 도착을 알려드려요. 위치는 이 폰 안에서만 쓰고 저장·전송하지 않아요.</span>'}
