@@ -1,0 +1,186 @@
+/* 일정·지도·비용 화면, 근처 더 보기 */
+function walkLoad(d){let w=0,h=0;d.ev.forEach(e=>{if(e.leg&&e.leg.use==='walk')w+=e.leg.min;if(e.kind==='place'&&e.p&&!e.p.easy)h++;});
+  const sc=w+h*20;return{w,h,lv:sc<45?['편안해요','ok']:sc<100?['보통이에요','mid']:['많이 걸어요','hard']};}
+function walkBar(d){const L=walkLoad(d);
+  return `<div class="wbar"><span class="wchip ${L.lv[1]}">걷기 부담 · ${L.lv[0]}</span><span class="meta">걷는 시간 약 ${L.w}분${L.h?' · 언덕·계단 가능 '+L.h+'곳':''}</span>${L.lv[1]==='hard'?'<button class="lnk" data-act="adj" data-v="less">더 적게 걷기</button>':''}
+  <button class="wrain${S.indoor?' on':''}" data-act="rainTog" aria-pressed="${!!S.indoor}">${S.indoor?'☀ 맑은 날 일정으로':'☔ 비 오는 날 일정으로'}</button></div>${S.indoor?'<div class="msg">비 오는 날 일정이에요. 실내 장소를 먼저 넣고 야외 자연·놀이 장소는 줄였어요. 지역에 실내 장소가 적으면 야외도 섞여요. 우산을 챙기세요.</div>':''}`;}
+function viewPlan(){const P_=PLAN,d=P_.days[UI.day-1],np=d.ev.filter(e=>e.kind==='place').length;
+  return `<div class="planpane${UI.travel?' trv':''}">${tvTop(d)}${homeCard(d)}<h2>${UI.day}일차${P_.S.date?' · '+dayLabel(P_.S,UI.day):''}</h2><div class="day-sub"><span>방문 ${np}곳</span><span>이동 약 ${d.km}km · ${d.mins}분</span></div><div class="day-sub"><span>입장 ${won(d.entry)}</span><span>식비 ${won(d.meal)}</span><span>교통 ${won(d.move)}</span><b style="color:var(--ink)">하루 약 ${won(d.sum)}</b></div>${dhRow(d,P_)}
+${walkBar(d)}${UI.edit?'<div class="msg">편집 중이에요. 순서를 바꾸거나 다른 곳으로 교체·삭제하면 이동거리와 비용을 바로 다시 계산해요. 내가 고른 곳을 빼려면 한 번 더 물어봐요.</div>':''}<ol class="tl">${d.ev.map((e,i)=>evHtml(e,i)+insHtml(e,i)).join('')}</ol>
+${UI.edit?'<button class="btn ghost" style="width:100%;margin-top:6px" data-act="sheet" data-v="add">+ 일정 추가</button>':''}
+${P_.excluded.length?`<div class="sec"><h2>일정에 못 넣은 곳</h2><ul class="notes">${P_.excluded.map(e=>`<li><b>${e.p.name}</b> · ${e.why}</li>`).join('')}</ul></div>`:''}
+${tourSec()}${evtSec(d)}
+<ul class="notes"><li>운영시간·휴무·예약 필요 여부는 방문 전에 꼭 확인해 주세요.</li><li>거리·시간·요금은 직선거리 기반 추정이에요. 확정 값이 아니에요.</li></ul></div>
+<div class="mappane">${UI.travel?tvMap(d):''}<div class="mapbox">${mapSvg(d)}</div><p class="hint">카카오맵(map.showday.kr) 연결 전의 이동 경로 개략도예요. 번호를 누르면 일정과 연결돼요.</p>${legendHtml(d)}${selInfo(d)}${costMini()}</div>`;}
+function costMini(){const P_=PLAN,T=P_.T,list=Object.values(P_.cats).filter(c=>c.v>0);
+  return `<div class="costmini sum"><div class="sub">비용 요약 (추정)</div><div class="big" style="font-size:24px">약 ${man(T.total)}</div><div class="kv" style="margin-top:8px">${list.map(c=>`<span class="k">${c.label}</span><span class="v">${won(c.v)}</span>`).join('')}</div>${capMsg(P_)}<button class="btn ghost" style="width:100%;margin-top:10px" data-act="rtab" data-v="cost">자세히 · 절약 대안</button></div>`;}
+function strip(){const P_=PLAN,T=P_.T;let st='';
+  if(P_.S.budget){const lo=P_.cmpT(T.lo),hi=P_.cmpT(T.hi),cap=P_.cap;st=hi<=cap?'<span class="good">예산 안이에요</span>':lo>cap?'<span class="bad">예산을 넘을 수 있어요</span>':'<span>예산 근처예요</span>';}
+  return `<div class="strip"><div><b>약 ${man(T.total)}</b><small>1인당 약 ${man(P_.per)} · 범위 ${man(T.lo)}~${man(T.hi)} (추정)</small></div>${st}<button class="lnk" data-act="rtab" data-v="cost">비용 자세히</button></div>`;}
+function selInfo(d){const e=d.ev[UI.sel];if(!e||!e.p)return '';return `<div class="msg"><b>${e.title}</b><br>${hm(e.t0)}${e.leg?' · '+legCost(e.leg)+' ('+e.leg.min+'분)':''}${['place','meal','cafe'].includes(e.kind)?` · <a href="${mapUrl(e.p)}" target="_blank" rel="noopener">카카오맵에서 길찾기</a>`:''}</div>`;}
+function viewCost(){const P_=PLAN,T=P_.T,cols={travel:'--c5',lodge:'--c2',move:'--c1',rental:'--c4',meal:'--c3',entry:'--c4'};
+  const list=Object.entries(P_.cats).filter(([k,c])=>c.v>0);const tot=Math.max(1,T.total);
+  const modeRows=['walk','transit','taxi','mix','car','rental'].map(m=>`<tr class="${P_.S.mode===m?'cur':''}"><td>${MLAB[m==='walk'?'walk':m]}${m==='walk'?' 중심':''}</td><td>${P_.cmp[m].cost?won(P_.cmp[m].cost):'0원'}</td><td>${Math.round(P_.cmp[m].min)}분</td></tr>`).join('');
+  const spent=EXP.reduce((s,e)=>s+e.amt,0),base=P_.S.budget?P_.cap:T.total,remain=base-spent;
+  return `<div class="sum"><div class="sub">${cityOf().name} ${durText()} · 성인 ${P_.S.adults}${P_.S.kids?' · 어린이 '+P_.S.kids:''}</div><div class="big">약 ${man(T.total)}</div><div class="sub">추정 범위 ${man(T.lo)} ~ ${man(T.hi)} · 1인당 약 ${won(P_.per)}</div>
+<div class="stack">${list.map(([k,c])=>`<i style="width:${c.v/tot*100}%;background:var(${cols[k]})"></i>`).join('')}</div>
+<div class="kv">${list.map(([k,c])=>`<span class="k"><i style="background:var(${cols[k]})"></i>${c.label}</span><span class="v">${won(c.v)}<small>${c.conf}${c.lo!==c.hi?' · '+man(c.lo)+'~'+man(c.hi):''}</small></span>`).join('')}</div>${capMsg(P_)}</div>
+<div class="sec"><h2>이렇게 바꾸면 줄어요</h2>${P_.alts.length?P_.alts.map((a,i)=>`<div class="alt"><span><b>${a.label}</b><span class="meta">${a.why} · 약 ${won(a.delta)} 절약</span></span><button class="btn sm" data-act="applyAlt" data-v="${i}">적용</button></div>`).join(''):'<p class="meta">지금 조건이 이미 비용을 많이 낮춘 상태예요.</p>'}</div>
+<div class="sec"><h2>이동수단별 현지 교통비</h2><div class="scroll-x"><table><tr><th>수단</th><th>교통비 합계</th><th>이동시간</th></tr>${modeRows}</table></div><p class="hint">같은 일정으로 수단만 바꿔 비교했어요. 택시는 ${P_.x.taxis}대 기준이고 혼잡 할증 15%를 반영했어요.</p></div>
+<div class="sec"><h2>일자별 비용</h2><div class="scroll-x"><table><tr><th>일차</th><th>입장</th><th>식비</th><th>교통</th><th>합계</th></tr>${P_.days.map(d=>`<tr><td>${d.n}일차</td><td>${won(d.entry)}</td><td>${won(d.meal)}</td><td>${won(d.move)}</td><td>${won(d.sum)}</td></tr>`).join('')}</table></div></div>
+<div class="sec"><h2>여행 중 지출 기록</h2><p class="meta">쓴 돈을 입력하면 ${P_.S.budget?'예산':'추정 총액'} 기준으로 남은 금액을 계산해요.</p><div class="exp"><input type="number" id="eamt" inputmode="numeric" placeholder="금액(원)" aria-label="지출 금액"><input type="search" id="ememo" placeholder="메모" aria-label="메모"><button class="btn sm" data-act="addExp">추가</button></div>
+${EXP.length?`<table style="margin-top:8px">${EXP.map((e,i)=>`<tr><td>${esc(e.memo||'지출')}</td><td>${won(e.amt)}</td><td><button class="lnk" data-act="delExp" data-v="${i}">삭제</button></td></tr>`).join('')}</table>`:''}
+<div class="msg ${remain<0?'bad':'good'}">쓴 돈 ${won(spent)} · ${remain<0?'약 '+won(-remain)+' 초과':'남은 금액 약 '+won(remain)}</div></div>
+<ul class="notes"><li>구분: <b>추정</b>은 샘플 데이터와 계산식 기반, <b>입력</b>·<b>예약 확정</b>은 직접 넣은 금액이에요.</li><li>조식과 개인 쇼핑비는 포함하지 않았어요.</li>${P_.S.originType==='seoul'&&P_.S.city!=='seoul'&&['car','rental'].includes(P_.S.mode)?'<li>왕복 교통비는 KTX·항공 기준이에요. 자가용으로 가시면 유류비·통행료가 따로 들어요.</li>':''}</ul>`;}
+const CAFEF=[['all','전체'],['water','물 전망'],['mtn','산 전망'],['hanok','한옥·전통'],['dessert','빵·디저트'],['pop','인기'],['cafecheap','가성비'],['kid','아이 가능']];
+const MEALF=[['all','전체'],['kr','한식'],['cn','중식'],['jp','일식'],['west','양식'],['quick','분식·간편'],['cheap','가성비'],['local','맛집'],['kid','아이 가능']];
+function lastIdx(){const d=PLAN.days[UI.day-1];let r=0;d.ev.forEach((e,i)=>{if(['place','meal','cafe'].includes(e.kind))r=i;});return r;}
+function addCtx(){const s=UI.sheet,d=PLAN.days[UI.day-1],idx=Math.min(s.idx,d.ev.length-1);let prev=PLAN.x.H;for(let k=idx;k>=0;k--){if(d.ev[k].p&&['place','meal','cafe'].includes(d.ev[k].kind)){prev=d.ev[k].p;break;}}return{d,idx,a:d.ev[idx],prev};}
+function achips(){const s=UI.sheet,tabs=[['place','관광지'],['cafe','카페'],['meal','식당'],['night','산책·한잔']].map(([k,l])=>chip('atab','k',k,s.tab===k,l)).join('');
+  const F=s.tab==='night'?[['all','전체'],['walk','산책'],['pub','가볍게 한잔']]:s.tab==='place'?RFIL:s.tab==='cafe'?CAFEF:MEALF,so=s.tab==='cafe'?[['near','가까운 순'],['pop','인기 순'],['cheap','저렴한 순']]:s.tab==='meal'?[['near','가까운 순'],['cheap','저렴한 순']]:[['near','가까운 순']];
+  return `<div class="chips">${tabs}</div><div class="chips" style="margin-top:10px">${F.map(([k,l])=>chip('afilter','k',k,UI.af===k,l)).join('')}</div>${so.length>1?`<div class="chips" style="margin-top:10px">${so.map(([k,l])=>chip('asort','k',k,UI.as===k,l)).join('')}</div>`:''}`;}
+function addList(){const s=UI.sheet,x=PLAN.x,{prev}=addCtx(),C=cityOf(),q=(UI.aq||'').trim(),pl=s.tab==='place';
+  const inPlan=new Set([...curOver().flat(),...PLAN.days.flatMap(dd=>dd.ev.filter(e=>e.kind==='meal'||e.kind==='cafe').map(e=>e.p.id))]);
+  let L;
+  if(pl)L=C.places.filter(p=>p.cat!=='식당'&&p.cat!=='카페'&&(q||!inPlan.has(p.id))&&(!x.wheel||p.easy)&&(q||UI.af==='all'||matchInt(UI.af,p)));
+  else if(s.tab==='night'){const af=UI.af;L=C.places.filter(p=>!inPlan.has(p.id)&&((af!=='pub'&&p.cat!=='식당'&&p.cat!=='카페'&&p.easy&&matchInt('walk',p))||(af!=='walk'&&p.tags.includes('pub'))));}
+  else{const kind=s.tab==='cafe'?'카페':'식당';L=C.places.filter(p=>p.cat===kind&&!p.tags.includes('pub')&&!inPlan.has(p.id)).filter(EF[UI.af]||EF.all);}
+  L=L.filter(p=>!q||p.name.includes(q)||(p.note||'').includes(q)).map(p=>({p,lg:legCalc(prev,p,S.mode,x,0),c:(pl||(s.tab==='night'&&p.cat!=='식당'))?entryCost(p,x):mealCost(p,x)}));
+  L.sort(UI.as==='cheap'?(a,b)=>a.c-b.c:UI.as==='pop'?(a,b)=>(ctag(b.p).pop-ctag(a.p).pop)||(a.lg.min-b.lg.min):(a,b)=>a.lg.min-b.lg.min);
+  return L.length?L.map(({p,lg,c})=>`<button class="place" data-act="addDo" data-v="${p.id}"><span class="bd"><b>${p.name}${smp(p)}<span class="tag">${p.cat}</span>${pl?dayTag(p.id):''}</b><span class="meta">${(pl||(s.tab==='night'&&p.cat!=='식당'))?'체류 약 '+p.dur+'분 · '+(c?'입장료 합계 약 '+won(c):'입장 무료'):'1인 약 '+won(p.fa)+' · 합계 약 '+won(c)}${p.note?' · '+esc(p.note):''}</span><span class="dist"><span>앞 장소에서 ${MLAB[lg.use]||'이동'} <b>${lg.min}분</b>${lg.cost?' · '+won(lg.cost):''}</span></span></span></button>`).join(''):'<p class="hint">조건에 맞는 곳이 없어요. 필터를 바꿔 보세요.</p>';}
+const RFIL=[['all','전체'],['nature','자연'],['walk','산책'],['culture','전시·역사'],['play','아이 체험'],['shop','쇼핑'],['photo','사진'],['food','먹거리'],['free','무료']];
+function rchips(){return RFIL.map(([k,l])=>chip('rfilter','k',k,UI.rf===k,l)).join('');}
+const dayTag=id=>{const d=PLAN.days.find(z=>z.ev.some(e=>e.kind==='place'&&e.p&&e.p.id===id));return d?`<span class="tag" style="background:var(--c3);color:#fff">${d.n}일차에 있음</span>`:'';};
+function repList(){const s=UI.sheet,x=PLAN.x,C=cityOf(),cur=plc(s.id),used=new Set(curOver().flat()),q=(UI.rq||'').trim();
+  const L=C.places.filter(p=>p.cat!=='식당'&&p.cat!=='카페'&&p.id!==s.id&&(q||!used.has(p.id))&&(!x.wheel||p.easy)&&(q||UI.rf==='all'||matchInt(UI.rf,p))&&(!q||p.name.includes(q))).map(p=>({p,d:hav(cur,p)})).sort((a,b)=>a.d-b.d);
+  return L.length?L.map(({p,d})=>`<button class="place" data-act="repDo" data-v="${p.id}"><span class="bd"><b>${p.name}<span class="tag">${p.cat}</span>${dayTag(p.id)}</b><span class="meta">체류 약 ${p.dur}분 · ${p.fa?'어른 '+won(p.fa):'무료'}${p.note?' · '+esc(p.note):''}</span><span class="dist"><span>지금 장소에서 직선 약 <b>${Math.round(d*10)/10}km</b></span></span></span></button>`).join(''):'<p class="hint">조건에 맞는 곳이 없어요. 필터를 바꿔 보세요.</p>';}
+function eatCtx(){const s=UI.sheet,d=PLAN.days[s.day-1],i=d.ev.findIndex(e=>e.slot===s.slot),e=d.ev[i];let prev=PLAN.x.H;for(let k=i-1;k>=0;k--){if(d.ev[k].p){prev=d.ev[k].p;break;}}return{d,i,e,prev};}
+const isLocal=p=>/대표|인기|현지|유명|명물|신선/.test(p.note||'');
+const ctag=p=>{const s=p.name+' '+(p.note||'');return{water:/바다|오션|호수|한강|해변|못/.test(s)||p.tags.includes('water'),mtn:/산 전망|산뷰|일출봉/.test(s)||p.tags.includes('mtn'),hanok:/한옥|전통/.test(s),dessert:/빵|베이커리|디저트/.test(s)||p.tags.includes('dessert'),pop:p.tags.includes('pop')};};
+const EF={water:p=>ctag(p).water,mtn:p=>ctag(p).mtn,hanok:p=>ctag(p).hanok,dessert:p=>ctag(p).dessert,pop:p=>ctag(p).pop,cafecheap:p=>p.fa<=8000,all:()=>true,kr:p=>p.tags.includes('kr'),cn:p=>p.tags.includes('cn'),jp:p=>p.tags.includes('jp'),west:p=>p.tags.includes('west'),quick:p=>p.tags.includes('quick'),cheap:p=>p.fa<=10000||p.tags.includes('quick'),local:isLocal,kid:p=>p.kid};
+function echips(){const c=eatCtx().e.kind==='meal',F=c?[['all','전체'],['kr','한식'],['cn','중식'],['jp','일식'],['west','양식'],['quick','분식·간편'],['cheap','가성비'],['local','맛집'],['kid','아이 가능']]:[['all','전체'],['water','물 전망'],['mtn','산 전망'],['hanok','한옥·전통'],['dessert','빵·디저트'],['pop','인기'],['cafecheap','가성비'],['kid','아이 가능']];
+  return F.map(([k,l])=>chip('efilter','k',k,UI.ef===k,l)).join('')+'<span style="flex:1 0 100%"></span>'+(c?[['near','가까운 순'],['cheap','저렴한 순']]:[['near','가까운 순'],['pop','인기 순'],['cheap','저렴한 순']]).map(([k,l])=>chip('esort','k',k,UI.es===k,l)).join('');}
+function eatList(){const x=PLAN.x,{e,prev}=eatCtx(),kind=e.kind==='meal'?'식당':'카페',q=(UI.eq||'').trim(),cur=mealCost(e.p,x);
+  let L=cityOf().places.filter(p=>p.cat===kind&&!p.tags.includes('pub')&&p.id!==e.p.id&&(!q||p.name.includes(q)||(p.note||'').includes(q)));
+  L=L.filter(EF[UI.ef]||EF.all);
+  L=L.map(p=>({p,lg:legCalc(prev,p,S.mode,x,0),c:mealCost(p,x)}));
+  L.sort(UI.es==='cheap'?(a,b)=>a.c-b.c:UI.es==='pop'?(a,b)=>(ctag(b.p).pop-ctag(a.p).pop)||(a.lg.min-b.lg.min):(a,b)=>a.lg.min-b.lg.min);
+  return L.length?L.map(({p,lg,c})=>{const dc=r100(c-cur);return `<button class="place" data-act="eatDo" data-v="${p.id}"><span class="bd"><b>${p.name}${smp(p)}</b><span class="meta">${esc(p.note||'')}</span><span class="dist"><span>1인 약 ${won(p.fa)}</span><span>이번 식사 약 <b>${won(c)}</b> (${dc===0?'비슷':(dc>0?'+':'−')+won(Math.abs(dc))})</span><span>${MLAB[lg.use]||'이동'} <b>${lg.min}분</b>${lg.cost?' · '+won(lg.cost):''}</span></span></span></button>`;}).join(''):'<p class="hint">조건에 맞는 곳이 없어요. 필터를 바꿔 보세요.</p>';}
+function sheetHtml(){const s=UI.sheet;if(!s||UI.view!=='result')return '';
+  const wrap=(title,body)=>`<div class="sheet-bg" data-act="closeSheet"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="${title}"><div class="shh"><h2>${title}</h2><button class="lnk" data-act="closeSheet">닫기</button></div>${body}</div>`;
+  const d=PLAN.days[UI.day-1];
+  if(s.t==='menu'){const b=[['cut5','비용 5만원 줄이기','가성비 식당·무료 장소 등으로'],['less','더 적게 걷기','걷는 양과 일정 수 줄임'],['notaxi','택시 대신 대중교통','교통비 절약'],['food','맛집 중심으로 변경','식사·현지 맛집 우선'],['rain','비 오는 날 일정','실내 장소 위주'],['tired','아이가 피곤해요','여유롭게 + 휴식'],['late','일정이 늦어졌어요','남은 시간에 맞춰 다시 계산'],['swap','관광지 하나 바꾸기','마음에 안 드는 곳 교체'],['cafe','근처 카페에서 쉬기',UI.day+'일차에 카페 휴식 추가']];
+    return wrap('일정 수정 · '+UI.day+'일차 기준',`<button class="opt on" data-act="sheet" data-v="voice" style="width:100%;margin-bottom:10px"><b>🎤 말·글로 바꾸기</b><small>"5시에 행사가 있어"처럼 말하면 알아서 다시 짜요</small></button><p class="meta" style="margin:0 0 8px">내가 고른 곳과 예약 확정은 묻지 않고 빼지 않아요.</p><div class="adj">${b.map(([k,t,sub])=>`<button data-act="adj" data-v="${k}">${t}<small>${sub}</small></button>`).join('')}</div>
+<div class="opts" style="margin-top:12px"><button class="opt" data-act="editOn"><b>순서·장소 직접 고치기</b><small>위아래 이동, 교체, 삭제, 다른 날로 옮기기</small></button><button class="opt" data-act="sheet" data-v="add"><b>+ 일정 추가</b><small>${UI.day}일차 맨 끝에 카페·식당·관광지 넣기 (중간은 일정 사이 ＋ 버튼)</small></button>${S.type==='stay'?'<button class="opt" data-act="jump" data-v="stay"><b>숙소 위치 바꾸기</b><small>내 숙소 위치를 넣으면 동선·택시비를 다시 계산해요</small></button>':''}<button class="opt" data-act="jump" data-v="confirm"><b>처음 조건 바꾸기</b><small>날짜·인원·숙소·예산 등 (직접 고친 순서는 새로 짜요)</small></button></div>
+${UI.undo.length?'<button class="btn ghost" style="margin-top:12px;width:100%" data-act="undo">직전 변경 되돌리기</button>':''}`);}
+  if(s.t==='tvmore')return wrap('이동 설정',`<div class="adj" style="grid-template-columns:1fr"><button data-act="lvStay">30분 더 머무르기<small>남은 일정 시간을 뒤로 밀어 다시 계산해요</small></button><button data-act="lvSkip">이곳 건너뛰기<small>지금 장소를 빼고 다음 코스로 안내해요</small></button><button data-act="stSheet" data-v="${UI.day}">출발 위치 바꾸기<small>내 위치나 지도 앱 위치에서 다시 출발해요</small></button><button data-act="sheet" data-v="menu">일정 수정<small>숙소·장소 바꾸기, 음성·글로 바꾸기</small></button><button data-act="travelOff">계획 화면으로 돌아가기<small>여행 모드를 끄고 일정을 고칠 수 있어요</small></button></div><p class="meta">시간이 지나면 앱이 알아서 다음 코스로 안내해요. 따로 누르지 않아도 괜찮아요.</p>`);
+  if(s.t==='late')return wrap('얼마나 늦어졌나요?',`<p class="meta">${UI.day}일차 일정을 뒤로 밀어 다시 계산해요. 시간이 모자란 곳은 빼되, 내가 고른 곳은 남기고 표시해요.</p><div class="chips" style="margin-top:10px">${[30,60,120].map(m=>`<button class="chip${S.delay&&S.delay.day===UI.day&&S.delay.min===m?' on':''}" data-act="delay" data-v="${m}">${m>=60?m/60+'시간':m+'분'} 늦어요</button>`).join('')}${S.delay?'<button class="chip" data-act="delay" data-v="0">지연 해제</button>':''}</div>`);
+  if(s.t==='swap'){const L=d.ev.filter(e=>e.kind==='place');return wrap('어느 곳을 바꿀까요?',L.length?L.map(e=>`<button class="place" data-act="swapDo" data-v="${e.p.id}"><span class="bd"><b>${e.title}${S.wish.includes(e.p.id)?'<span class="tag req">내가 고른 곳</span>':''}</b><span class="meta">${hm(e.t0)} · 체류 약 ${e.dur}분</span></span></button>`).join(''):'<p class="hint">이 날은 바꿀 관광지가 없어요.</p>');}
+  if(s.t==='add'){const {a,prev}=addCtx(),nm=a&&['place','meal','cafe'].includes(a.kind)?a.title:(a&&a.kind==='arrive'?'도착':'출발');
+    return wrap('일정 추가',`<p class="meta" style="margin:0 0 8px">${UI.day}일차 · <b>${esc(nm)}</b> 다음에 넣어요.<br>거리·시간은 앞 장소 기준이에요. 카페·식당은 그 시간대의 식사로 계산해요.${s.tab==='cafe'?'<br>인기 순위는 실제 데이터가 아니라 샘플 표시예요.':''}${s.tab==='night'?'<br>가까운 순이에요. 호프·맥주집은 샘플 위치이고, 실제 가게는 카카오맵 연결 후 검색돼요.'+(S.kids>0?' 아이와 함께면 산책이나 카페를 추천해요.':''):''}</p><input type="search" id="aq" placeholder="이름 검색" value="${esc(UI.aq||'')}" autocomplete="off"><div id="achips" style="margin:10px 0">${achips()}</div><div id="alist">${addList()}</div>`);}
+  if(s.t==='confirm'){const p=plc(s.id)||{name:'이 장소'};const what={del:'일정에서 뺄까요?',swap:'다른 곳으로 바꿀까요?',eat:'다른 곳으로 바꿀까요?'}[s.op];
+    return wrap('내가 고른 곳이에요',`<p>'${p.name}'은(는) 직접 고른 곳이에요. ${what}</p><div class="row2" style="margin-top:12px"><button class="btn ghost" data-act="closeSheet" style="flex:1">그대로 둘게요</button><button class="btn" data-act="confirmYes">네, 바꿀게요</button></div>`);}
+  if(s.t==='item'){const e=d.ev[s.idx];if(!e||!e.p)return '';const id=e.p.id,b=(op,tx,sub)=>`<button data-act="ed" data-k="${op}" data-v="${id}">${tx}<small>${sub}</small></button>`;
+    return wrap(e.title,`<p class="meta" style="margin:0 0 8px">${hm(e.t0)}${S.wish.includes(id)?' · 내가 고른 곳이에요':''}</p><div class="adj">${b('up','↑ 위로','순서를 앞으로')}${b('dn','↓ 아래로','순서를 뒤로')}${PLAN.D>1?b('day','다른 날로','다음 날로 옮기기'):''}${b('del','일정에서 빼기','다시 계산해요')}</div><div class="opts" style="margin-top:10px"><button class="opt on" data-act="repSheet" data-v="${id}"><b>다른 곳으로 바꾸기</b><small>자연·산책·체험 등 조건으로 골라요</small></button><button class="opt" data-act="swapDo" data-v="${id}"><b>비슷한 곳으로 자동 교체</b><small>가까운 후보 중 점수가 높은 곳</small></button><a class="opt" style="text-decoration:none;color:inherit" href="${mapUrl(e.p)}" target="_blank" rel="noopener"><b>길찾기·지도</b><small>카카오맵에서 열기</small></a></div>`);}
+  if(s.t==='rep'){const cur=plc(s.id);return wrap('어느 곳으로 바꿀까요?',`<p class="meta" style="margin:0 0 8px">지금: <b>${cur.name}</b>${S.wish.includes(s.id)?'<br>내가 고른 곳이에요. 바꾸면 필수 방문지에서 빠져요.':''}<br>가까운 순으로 보여드려요.</p><input type="search" id="rq" placeholder="장소 이름 검색" value="${esc(UI.rq||'')}" autocomplete="off"><div class="chips" id="rchips" style="margin:10px 0">${rchips()}</div><div id="rlist">${repList()}</div>`);}
+  if(s.t==='eat'){const {e}=eatCtx();return wrap((e.kind==='meal'?'식당':'카페')+' 바꾸기',`<p class="meta" style="margin:0 0 8px">식당·카페 이름은 샘플이에요. 실제 매장은 카카오맵 연결 후 나와요.<br>지금: <b>${e.title}</b> · ${hm(e.t0)}${S.wish.includes(e.p.id)?'<br>내가 고른 곳이에요. 바꾸면 필수 방문지에서 빠져요.':''}<br>거리·시간은 바로 앞 일정 장소에서 계산했어요.${e.kind==='cafe'?'<br>인기·매출 순위는 실제 데이터가 아니라 샘플 표시예요. 장소 데이터를 연결하면 실제 값으로 바뀌어요.':''}</p><input type="search" id="eq" placeholder="이름·메뉴 검색" value="${esc(UI.eq||'')}" autocomplete="off"><div class="chips" id="echips" style="margin:10px 0">${echips()}</div><div id="elist">${eatList()}</div>${(S.eatPick||{})[s.slot]?'<button class="btn ghost" style="width:100%;margin-top:6px" data-act="eatReset">처음 추천으로 되돌리기</button>':''}`);}
+  if(s.t==='fx'){const f=(S.fixedEv||[]).find(z=>z.day===s.n)||{t:960,dur:120,title:'행사',pid:null},H2=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+    return wrap(s.n+'일차 행사 수정',`<div class="fld"><small>행사 이름</small><input type="text" id="fxn" value="${esc(f.title)}" autocomplete="off"></div><div class="fld" style="margin-top:8px"><small>시작 시간</small><input type="time" id="fxt" value="${H2(f.t)}"></div>
+<div class="fld" style="margin-top:8px"><small>걸리는 시간</small><select id="fxd">${[60,90,120,150,180,240].map(m=>`<option value="${m}"${m===f.dur?' selected':''}>${hmT(m)}</option>`).join('')}</select></div>
+<div class="fld" style="margin:8px 0"><small>행사 장소 (이동 시간 계산)</small><select id="fxp"><option value="">장소 선택 안 함 (이동 20분 여유)</option>${cityOf().places.filter(p=>p.cat!=='식당'&&p.cat!=='카페').map(p=>`<option value="${p.id}"${f.pid===p.id?' selected':''}>${esc(p.name)}</option>`).join('')}</select></div>
+<div class="row2"><button class="btn ghost" data-act="fxDel" data-v="${s.n}" style="flex:1">행사 빼기</button><button class="btn" data-act="fxSave" data-v="${s.n}">저장</button></div>`);}
+  if(s.t==='st')return wrap(s.n+'일차 출발 위치',`<p class="meta" style="margin:0 0 8px">오늘 어디서 출발하는지 정하면, 그 위치 기준으로 첫 이동 거리·시간·택시비를 다시 계산해요.</p>
+${(()=>{const e0=PLAN.days[s.n-1].ev[0],cur=e0?hm(e0.t0):'',nr=Math.ceil(nowMin()/5)*5,H2=m=>String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+  return `<div class="fld" style="margin-bottom:10px;padding:8px 10px;border:1px solid var(--line);border-radius:10px"><small><b>출발 시간</b> · 지금 일정은 <b>${cur}</b>에 시작해요${S.startShift&&S.startShift.day===s.n?' (직접 정함)':''}</small><div style="display:flex;gap:6px;margin-top:6px"><input type="time" id="stt" value="${H2(nr)}" style="flex:1"><button class="chip" data-act="stTime" data-n="${s.n}">이 시간에 출발</button></div><div class="chips" style="margin-top:6px"><button class="chip" data-act="stTimeNow" data-n="${s.n}">지금 시간(${H2(nr)})으로</button>${S.startShift&&S.startShift.day===s.n?`<button class="chip" data-act="stTimeReset" data-n="${s.n}">기본 시간으로</button>`:''}</div></div>`;})()}<button class="chip" data-act="stGeo" data-n="${s.n}" style="width:100%;margin-bottom:8px">📍 지금 내 위치에서 출발 (위치 허용 필요)</button>
+<div class="fld"><small>위치가 안 잡히면: 지도 앱에서 확인 → 붙여넣기</small><div class="chips" style="margin:6px 0"><a class="chip" href="https://map.kakao.com/" target="_blank" rel="noopener">카카오맵</a><a class="chip" href="https://map.naver.com/" target="_blank" rel="noopener">네이버지도</a><a class="chip" href="https://maps.google.com/" target="_blank" rel="noopener">구글지도</a></div>
+<input type="text" id="stn" placeholder="출발 장소 이름 (선택)" autocomplete="off" style="margin-bottom:6px"><input type="text" id="stp" placeholder="링크 또는 좌표 붙여넣기" autocomplete="off"><button class="chip" data-act="stPaste" data-n="${s.n}" style="width:100%;margin-top:6px">이 위치에서 출발</button><button class="chip" data-act="mapFind" data-src="stn,stp" style="width:100%;margin-top:6px">🔎 입력한 주소·상호를 카카오맵에서 찾기</button><p class="meta" style="font-size:13px;margin:4px 0 0">주소나 가게 이름은 위 칸에 적고 이 버튼을 누르세요. 지도에서 찾아 공유 링크를 복사한 뒤 아래 칸에 붙여넣으면 위치가 잡혀요.</p></div>
+<div class="fld" style="margin-top:12px;border-top:1px solid var(--line);padding-top:10px"><small><b>카카오맵 길찾기 값으로 첫 이동 맞추기</b> (숙소→첫 장소)</small>
+<input type="text" id="sfn" value="${esc(((S.startAt||{})[s.n]||{}).name||'경북 경주시 충효동 2961-3')}" style="margin:6px 0" aria-label="출발지 이름">
+<select id="sft" aria-label="첫 목적지" style="margin-bottom:6px">${(()=>{const L=PLAN.days[s.n-1].ev.filter(e=>e.kind==='place').map(e=>e.p);const pre=L.find(p=>p.name==='불국사')||L[0];return cityOf().places.filter(p=>p.cat!=='식당'&&p.cat!=='카페').map(p=>`<option value="${p.id}"${pre&&pre.id===p.id?' selected':''}>${esc(p.name)}</option>`).join('');})()}</select>
+<div class="row2"><input type="number" id="sfk" step="0.1" value="${(S.legFix&&S.legFix.day===s.n)?S.legFix.km:17.6}" aria-label="거리 km"><input type="number" id="sfm" value="${(S.legFix&&S.legFix.day===s.n)?S.legFix.min:27}" aria-label="시간 분"><input type="number" id="sfc" step="100" value="${(S.legFix&&S.legFix.day===s.n)?S.legFix.cost:24500}" aria-label="택시비 원"></div><p class="meta" style="font-size:13px;margin:4px 0 6px">거리(km) · 시간(분) · 택시비(원) 순서예요. 카카오맵 길찾기 화면의 값을 넣으면 그대로 반영하고, 그 장소를 맨 처음으로 옮겨요. 지도 위 핀은 대략 위치예요.</p><button class="chip" data-act="stFix" data-n="${s.n}" style="width:100%">이 값으로 ${s.n}일차 적용</button></div>
+${(S.startAt||{})[s.n]?`<button class="chip" data-act="stClear" data-n="${s.n}" style="width:100%;margin-top:6px">숙소에서 출발로 되돌리기</button>`:''}`);
+  if(s.t==='dh')return wrap(s.n+'일차 밤 숙소',`<p class="meta" style="margin:0">바꾸면 다음 날 아침 출발 숙소도 함께 바뀌고, 이동 거리·택시비를 다시 계산해요.</p>${nightPick(s.n)}`);
+  if(s.t==='voice')return `<div class="sheet vdock" role="dialog" aria-label="말·글로 일정 바꾸기"><div class="shh" style="margin-bottom:6px"><h2 style="font-size:16px">🎤 말·글로 바꾸기 · ${UI.day}일차</h2><button class="lnk" data-act="closeSheet">닫기</button></div><textarea id="vtext" rows="2" class="vta" placeholder="예: 4시에 첨성대 행사가 있어. 오후 일정을 오전으로" autocomplete="off">${esc(UI.vtext||'')}</textarea>
+<p class="meta" style="margin:4px 0 0;font-size:13px">일정을 말이나 글로 바꿔요. 키보드의 🎤로 말해도 돼요.</p>
+<div class="row2" style="margin:6px 0"><button class="btn ghost" id="vmic" data-act="micGo" style="flex:1">🎤 말하기</button><button class="btn" id="vgo" data-act="vApply"${parseSay(UI.vtext).acts.length?'':' disabled'}>이대로 바꾸기</button></div>
+<div id="vprev">${vprev()}</div><details style="margin-top:6px"><summary class="meta">이렇게 말해 보세요</summary><div class="chips" style="margin-top:6px">${vExamples().map((t,i)=>`<button class="chip" data-act="vEx" data-v="${i}">${esc(t)}</button>`).join('')}</div></details></div>`;
+  if(s.t==='copy')return wrap('아래 글을 길게 눌러 복사하세요',`<textarea class="cp" readonly id="cptext"></textarea>`);
+  return '';}
+/*LIVE_START — 여행 중 모드 (안내자 말풍선 · 큰 버튼 3개 · 지도) */
+const nowMin=()=>UI.clk!=null?UI.clk:(()=>{const t=new Date();return t.getHours()*60+t.getMinutes();})();
+const LV=()=>ls.get('showday_live',{notif:true});
+function lvState(d){const n=nowMin(),auto=isTravelDay(d)||UI.clk!=null,L=d.ev.map((e,i)=>({e,i})).filter(o=>CHECKABLE.includes(o.e.kind));
+  const dn=o=>!!CHK[ckey(d.n,o.e)]||(auto&&n>=o.e.t1+15);
+  const cur=L.find(o=>!dn(o)),nx=cur?L.find(o=>o.i>cur.i&&!dn(o)):null;return{L,cur,nx,done:L.filter(dn).length,dn};}
+const legLab=lg=>(lg.use==='car'?(S.mode==='rental'?'렌터카':'자가용'):MLAB[lg.use]||'이동');
+const fmtD=d=>d<1?Math.max(10,Math.round(d*100)*10)+'m':(Math.round(d*10)/10)+'km';
+const walkMin=d=>Math.max(1,Math.ceil(d*1.2/(PLAN&&PLAN.x?PLAN.x.walkSp:4)*60));
+function hereHtml(st){const G=(UI.geo&&UI.geo.lat!=null)?UI.geo:UI.here;
+  if(!G)return `<div class="lvcard here"><b>📍 지금 위치에서 가는 시간</b><span class="meta">버튼을 누르면 도보·버스·택시 시간과 금액을 보여드려요. 위치는 이 폰 안에서만 쓰고 저장하지 않아요.</span><button class="btn sm" data-act="hereGo">지금 위치 확인</button></div>`;
+  const c=st.cur&&st.cur.e,nx=st.nx&&st.nx.e;let t=c&&c.p?c:null;if(t&&hav(G,t.p)<0.25)t=nx&&nx.p?nx:null;
+  if(!t)return '';const lg=legCalc(G,t.p,'mix',PLAN.x,0),a=lg.alts,CC=PLAN.x.C,bw=UI.busWait,hasW=bw!=null&&bw!=='';
+  const ride=Math.max(3,a.transit.min-(CC.transit?CC.wait:25)),trT=hasW?(+bw)+ride:a.transit.min;
+  const op=[{k:'walk',n:'🚶 도보',m:a.walk.min,c:0,ok:a.walk.ok||a.walk.min<=40},{k:'bus',n:'🚌 버스·지하철',m:trT,c:a.transit.cost,ok:true},{k:'taxi',n:'🚕 택시',m:a.taxi.min,c:a.taxi.cost,ok:true}];
+  const cand=op.filter(o=>o.ok),fast=cand.reduce((x,y)=>y.m<x.m?y:x);
+  let rec=fast;cand.forEach(o=>{if(o.m<=fast.m+10&&o.c<rec.c&&rec.m<=fast.m+10)rec=o;});
+  let why='';
+  if(hasW){const bus=op[1];if(rec.k==='bus')why=`버스가 ${bw}분 후에 와서 타고 가면 총 약 ${bus.m}분이에요. 이게 가장 알맞아요.`;
+    else if(rec.k==='taxi')why=`버스는 ${bw}분 기다려야 해서 총 약 ${bus.m}분 걸려요. 택시가 약 ${bus.m-op[2].m}분 빨라요.`;
+    else why=`버스를 기다리는 것보다 걷는 게 비슷하거나 빨라요.`;}
+  else why=`버스가 몇 분 후에 오는지 입력하면 기다리는 시간까지 넣어 다시 비교해 드려요.`;
+  let near='';if(rec.m>=20){const d0=PLAN.days[UI.day-1],used=new Set(d0.ev.filter(e=>e.p).map(e=>e.p.id)),x0=PLAN.x;
+    const L=CC.places.filter(p=>p.cat!=='식당'&&p.cat!=='카페'&&!used.has(p.id)&&(!x0.wheel||p.easy)).map(p=>({p,d:hav(G,p),lg:legCalc(G,p,'mix',x0,0)})).filter(o=>o.d<hav(G,t.p)*0.7).sort((a,b)=>a.d-b.d).slice(0,3);
+    if(L.length)near=`<div class="recbox" style="background:#e8f4ea">🙂 가기 멀면 가까운 곳은 어때요?${L.map(o=>`<div class="hr"><span><b>${esc(o.p.name)}</b></span><span>${o.lg.alts.walk.min<=20?'도보 '+o.lg.alts.walk.min+'분':legLab(o.lg)+' '+o.lg.min+'분'} · ${fmtD(o.d)}</span><button class="btn sm" data-act="nearAdd" data-v="${o.p.id}">일정에 넣기</button></div>`).join('')}</div>`;}
+  const row=o=>`<div class="hr${o.k===rec.k?' rec':''}"><span>${o.n}</span><b>${o.m>=60?Math.floor(o.m/60)+'시간 '+(o.m%60?o.m%60+'분':''):o.m+'분'}${o.k==='bus'&&hasW?' (대기 '+bw+'분 포함)':''}</b><span>${o.c?'약 '+won(o.c):'무료'}</span></div>`;
+  const sum=`<button class="hsum" data-act="hereTog"><span>📍 → <b>${esc(t.title)}</b><br><small>추천 ${rec.n} ${rec.m>=60?Math.floor(rec.m/60)+'시간 '+(rec.m%60?rec.m%60+'분':''):rec.m+'분'}${rec.c?' · 약 '+won(rec.c):' · 무료'}</small></span><i>${UI.hereOpen?'접기 ▴':'자세히 ▾'}</i></button>`;
+  if(!UI.hereOpen)return `<div class="lvcard here">${sum}</div>`;
+  return `<div class="lvcard here">${sum}<span class="meta">직선 기준 약 ${fmtD(hav(G,t.p))} · 대략값이에요</span>${op.map(row).join('')}<div class="recbox">👉 추천: <b>${rec.n}</b><br>${why}</div>${near}<div class="busin">🚌 버스 도착까지 <input id="busw" type="number" inputmode="numeric" min="0" max="120" value="${hasW?bw:''}" placeholder="분"> 분 <button class="btn sm" data-act="busSet">적용</button>${hasW?' <button class="lnk" data-act="busClr">지우기</button>':''}</div><button class="lnk" data-act="hereGo">위치 다시 확인</button> <a href="${mapUrl(t.p)}" target="_blank" rel="noopener">카카오맵 길찾기</a></div>`;}
+function syncHtml(d){if(!d||!isTravelDay(d)||UI.syncNo===d.n)return '';const G=(UI.geo&&UI.geo.lat!=null)?UI.geo:UI.here;
+  return `<div class="lvcard sync"><span>⏱ <b>지금 ${hm(nowMin())}${G?' · 내 위치 확인됨':''}</b> — 지난 곳은 빼고 남은 일정을 지금 기준으로 맞출까요?</span><div class="sbtn"><button class="btn sm" data-act="syncGo">예, 맞추기</button><button class="lnk" data-act="syncNo">나중에</button></div></div>`;}
+function syncGo(){const d=PLAN.days[UI.day-1];if(!d)return;
+  const run=G=>{const st0=lvState(d),done=new Set(st0.L.filter(o=>st0.dn(o)&&o.e.p).map(o=>o.e.p.id)),o=curOver(),n=UI.day,st=Math.ceil(nowMin()/5)*5;
+    commit(()=>{o[n-1]=o[n-1].filter(id=>!done.has(id));S.over=o;S.startShift={day:n,st};if(G){const m={...(S.startAt||{})};m[n]={name:'현재 위치',lat:G.lat,lng:G.lng};S.startAt=m;}},`${hm(st)} 기준으로 남은 일정을 맞췄어요`+(G?' · 지금 위치에서 출발':' (위치는 못 가져와 시각만 맞췄어요)'));UI.syncNo=n;};
+  const G0=(UI.geo&&UI.geo.lat!=null)?UI.geo:UI.here;if(G0){run(G0);return;}
+  if(!navigator.geolocation){run(null);return;}
+  navigator.geolocation.getCurrentPosition(pos=>{UI.here={lat:pos.coords.latitude,lng:pos.coords.longitude};run(UI.here);},()=>run(null),{enableHighAccuracy:true,timeout:6000});}
+function hereGo(){if(!navigator.geolocation){toast('이 화면에서는 위치를 못 가져와요. 브라우저에서 열거나 "출발 위치 바꾸기"를 써 주세요');return;}
+  navigator.geolocation.getCurrentPosition(pos=>{UI.here={lat:pos.coords.latitude,lng:pos.coords.longitude};render(true);},()=>toast('위치를 못 가져왔어요. 위치 권한을 허용해 주세요'),{enableHighAccuracy:true,timeout:8000});}
+function guideSay(st){const n=nowMin(),c=st.cur&&st.cur.e,x=st.nx&&st.nx.e,G=UI.geo&&UI.geo.lat!=null?UI.geo:null;
+  if(!c)return{t:'오늘 일정을 모두 마쳤어요. 수고 많으셨습니다! 푹 쉬세요.',k:'end'};
+  const nm=x?`<b>${esc(x.title)}</b>`:'';
+  const dc=G&&c.p?hav(G,c.p):null,dn=G&&x&&x.p?hav(G,x.p):null;
+  if(n<c.t0-20)return{t:`<b>${esc(c.title)}</b>은(는) ${hm(c.t0)}에 시작해요. 시간이 남았어요. 근처 더 보기를 눌러 보세요.`,k:'wait'};
+  if(n<c.t0)return{t:`곧 <b>${esc(c.title)}</b> 갈 시간이에요.${dc!=null&&dc>0.15?` 지금 위치에서 약 ${fmtD(dc)}, 걸어서 약 ${walkMin(dc)}분이에요.`:c.leg?` ${legLab(c.leg)}로 약 ${c.leg.min}분 걸려요.`:''}`,k:'soon'+(dc!=null?Math.round(dc*10):'')};
+  if(dc!=null&&dc>0.3&&n<c.t1)return{t:`<b>${esc(c.title)}</b>까지 약 ${fmtD(dc)} 남았어요. 걸어서 약 ${walkMin(dc)}분이에요.`,k:'goto'+Math.round(dc*10)};
+  const arr=dc!=null&&dc<=0.15?'도착하셨네요! ':'';
+  if(n<c.t1-10)return{t:`${arr}<b>${esc(c.title)}</b> ${c.kind==='meal'?'맛있게 드시고 계신가요?':c.kind==='cafe'?'여유롭게 쉬고 계신가요?':'구경 잘 하고 계신가요?'} ${hm(c.t1)}까지 ${c.kind==='place'?'둘러보시면':'계시면'} 돼요.`,k:'now'+(arr?'a':'')};
+  if(n<c.t1)return{t:`슬슬 마무리할 시간이에요. ${x?`다음은 ${nm}이에요.`:'오늘의 마지막 장소예요.'}`,k:'end10'};
+  const way=dn!=null&&dn>0.15?` 지금 위치에서 약 ${fmtD(dn)}, 걸어서 약 ${walkMin(dn)}분이에요.`:'';
+  return{t:x?`다음 코스는 ${nm}입니다! 이동하실까요, 더 머무르실까요?${way}`:`오늘 마지막 코스를 마칠 시간이에요. 마무리하실까요?`,k:'over'+(dn!=null?Math.round(dn*10):'')};}
+let geoId=null,geoLast=0;
+function geoStart(){if(!navigator.geolocation){toast('이 기기에서는 위치를 쓸 수 없어요');return;}
+  try{geoId=navigator.geolocation.watchPosition(pos=>{UI.geo={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:pos.coords.accuracy,t:Date.now()};geoCheck();},err=>{if(err.code===1){geoStop();toast('위치 권한이 꺼져 있어요. 이 화면에서는 위치를 쓸 수 없을 수 있어요');render(true);}else if(!UI.geoWarn){UI.geoWarn=true;toast('위치를 잠시 확인하지 못했어요. 계속 시도할게요');}},{enableHighAccuracy:false,maximumAge:15000,timeout:25000});UI.geoWant=true;toast('위치를 확인하는 중이에요');}
+  catch(e){toast('위치를 쓸 수 없어요');}}
+function geoStop(){try{if(geoId!=null)navigator.geolocation.clearWatch(geoId);}catch(e){}geoId=null;UI.geo=null;UI.geoWant=false;}
+function geoCheck(){if(UI.view!=='result'||!UI.travel||!PLAN)return;if(document.activeElement&&/^(busw|vtext|stt)$/.test(document.activeElement.id))return;const d=PLAN.days[UI.day-1];if(!d)return;const st=lvState(d),G=UI.geo;
+  if(G&&st.cur&&st.nx&&isTravelDay(d)&&st.cur.e.p&&st.nx.e.p&&hav(G,st.nx.e.p)<0.12&&hav(G,st.cur.e.p)>0.25){CHK[ckey(d.n,st.cur.e)]=true;ls.set('showday_chk',CHK);UI.scrollCur=true;toast(st.nx.e.title+'에 도착했어요. 다음 코스로 넘어갔어요');render(true);geoLast=Date.now();return;}
+  if(UI.sheet)return;if(Date.now()-geoLast>20000||UI.lvSig!==guideSay(st).k+(st.cur?st.cur.e.title:'')){geoLast=Date.now();render(true);}}
+const guideSvg=`<svg class="gsvg" viewBox="0 0 64 64" role="img" aria-label="안내 도우미"><circle cx="32" cy="36" r="20" fill="#F6D2B0"/><path d="M13 30c2-14 36-14 38 0z" fill="var(--accent)"/><rect x="10" y="29" width="44" height="5" rx="2.5" fill="var(--accent)"/><circle cx="25" cy="39" r="2.4" fill="#3b2a1d"/><circle cx="39" cy="39" r="2.4" fill="#3b2a1d"/><path d="M25 46q7 6 14 0" stroke="#3b2a1d" stroke-width="2.4" fill="none" stroke-linecap="round"/><circle cx="20" cy="44" r="3" fill="#F2A98C" opacity=".6"/><circle cx="44" cy="44" r="3" fill="#F2A98C" opacity=".6"/><line x1="50" y1="8" x2="50" y2="26" stroke="#7a5a3a" stroke-width="2"/><path d="M50 8l10 4-10 4z" fill="var(--accent)"/></svg>`;
+function isTravelDay(d){if(!S.date)return false;const[y,m,dd]=S.date.split('-').map(Number),t=new Date(y,m-1,dd+d.n-1),n=new Date();return t.getFullYear()===n.getFullYear()&&t.getMonth()===n.getMonth()&&t.getDate()===n.getDate();}
+const catOf=e=>e.kind==='meal'?'식사':e.kind==='cafe'?'카페':(e.p&&e.p.cat)||'일정';
+function tvStrip(st){const c=st.cur&&st.cur.e,x=st.nx&&st.nx.e;if(!c)return '';
+  return `<div class="tvstrip"><div><span class="k">지금</span><span class="cat">${catOf(c)}</span><b>${esc(c.title)}</b><small>~${hm(c.t1)}</small></div>${x?`<div class="nx"><span class="k">다음</span><span class="cat">${catOf(x)}</span><b>${esc(x.title)}</b><small>${hm(x.t0)}</small></div>`:''}</div>`;}
+function tvMap(d){const st=lvState(d);return `<div class="tvmap"><div class="gbub small">${guideSay(st).t}</div>${tvStrip(st)}${syncHtml(d)}${hereHtml(st)}<div style="margin:8px 0">${nearBtn()}</div>${nearHtml()}</div>`;}
+function tvBar(){const d=PLAN.days[UI.day-1],k=guideSay(lvState(d)).k,dec=/^(over|end10)/.test(k);
+  return (dec?'<button class="btn ghost" data-act="lvStay">30분 더</button>':'<button class="btn ghost" data-act="sheet" data-v="tvmore" aria-label="더 보기">⋯</button>')+'<button class="btn" data-act="lvNext">다음으로 이동</button>';}
+/*NEAR_START — 근처 더 보기 (시제품 샘플 데이터. 나중에 카카오 로컬 주변 검색으로 교체) */
+function nearCands(d,st){const C=cityOf(),x=PLAN.x,G=UI.geo&&UI.geo.lat!=null?UI.geo:null,cur=st.cur&&st.cur.e,anchor=G||(cur&&cur.p)||x.H,tab=UI.nearTab||'place';
+  const used=new Set(d.ev.filter(e=>e.p).map(e=>e.p.id)),eve=nowMin()>=17*60;
+  let L=C.places.filter(p=>!used.has(p.id)&&(tab==='place'?(p.cat!=='식당'&&p.cat!=='카페'&&(!x.wheel||p.easy)):p.cat===(tab==='meal'?'식당':'카페')&&(eve||!p.tags.includes('pub'))));
+  const oth=new Set(curOver().flat());return L.map(p=>({p,oth:oth.has(p.id),dist:hav(anchor,p),lg:legCalc(anchor,p,S.mode,x,0)})).sort((a,b)=>a.dist-b.dist).slice(0,3);}
+function nearHtml(){if(!UI.nearOn||!UI._near)return '';const x=PLAN.x,tab=UI.nearTab||'place';
+  const tabs=[['place','가볼 곳'],['meal','식당'],['cafe','카페']].map(([k,l])=>`<button class="chip${tab===k?' on':''}" data-act="nearTab" data-v="${k}">${l}</button>`).join('');
+  const cards=UI._near.map((o,i)=>{const p=o.p,isE=p.cat==='식당'||p.cat==='카페',c=isE?mealCost(p,x):entryCost(p,x);
+    return `<div class="ncard" data-nid="${p.id}"><span class="nl">${'가나다'[i]}</span><div class="nb"><b>${esc(p.name)}${smp(p)}</b><span class="meta">${catOf({kind:p.cat==='식당'?'meal':p.cat==='카페'?'cafe':'place',p})} · ${legLab(o.lg)} 약 ${o.lg.min}분 (${fmtD(o.dist)}) · ${isE?'1인 약 '+won(p.fa):c?'입장료 약 '+won(c):'입장 무료'}${o.oth?' · 다른 날 일정에 있어요':''}</span></div><button class="btn sm" data-act="nearAdd" data-v="${p.id}">일정에 넣기</button></div>`;}).join('');
+  return `<div class="nearbox"><div class="chips">${tabs}</div>${cards||'<p class="hint">근처에 더 보여 드릴 곳이 없어요.</p>'}<p class="meta">${UI.geo?'내 위치':'지금 장소'} 기준 가까운 순이에요. 샘플 데이터예요.</p></div>`;}
+const nearBtn=()=>`<button class="geob${UI.nearOn?' on':''}" data-act="nearTog">🔍 근처 더 보기</button>`;
