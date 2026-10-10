@@ -1,9 +1,9 @@
 /* 결과 화면 조립, 말·글로 일정 바꾸기(parseSay/applySay) */
-function viewResult(){const P_=PLAN,t=UI.rtab;
-  const days=(t==='plan'||t==='map')?`<div class="tabs">${P_.days.map(d=>chip('day','day',d.n,UI.day===d.n,d.n+'일차'+(P_.S.date?' '+dayLabel(P_.S,d.n).split('(')[0]:''))).join('')}</div>`:'';
-  const body=t==='cost'?viewCost():t==='glance'?viewGlance():viewPlan();
-  return `<div class="rhead c-${t}${UI.travel?' trvh':''}"><h1 style="margin-top:14px">${cityOf().name} ${durText()} 추천 일정</h1><p class="sub">${P_.S.date?dayLabel(P_.S,1)+' 출발 · ':''}${P_.x.H.name} 기준 · 샘플 데이터와 추정값이에요${P_.S.fixedTimes?' · 예약 시간 고정':''}</p><p class="tbtn"><button class="chip" data-act="jump" data-v="time">🕐 ${P_.S.type==='day'?hm(P_.S.depStart)+' 출발 · '+hm(P_.S.depart)+' 귀가':hm(P_.S.arrive)+' 도착 · '+hm(P_.S.depart)+' 출발'} · 바꾸기</button></p>${t==='cost'?'':strip()}</div>
-<div class="rnav"><div class="rtabs">${[['glance','한눈에'],['plan','일정'],['map','지도'],['cost','비용']].map(([k,l])=>`<button data-act="rtab" data-v="${k}" class="${t===k?'on':''}">${l}</button>`).join('')}</div>${days}</div><div class="res ${(t==='plan'||t==='map')?'two':''}" data-t="${t}">${body}</div>`;}
+function viewResult(){const P_=PLAN;
+  const days=`<div class="tabs">${P_.days.map(d=>chip('day','day',d.n,UI.day===d.n,d.n+'일차'+(P_.S.date?' '+dayLabel(P_.S,d.n).split('(')[0]:''))).join('')}</div>`;
+  const mode=UI.travel?'여행 중':'여행 계획';
+  return `<section class="travel-dashboard"><div class="dashboard-head"><div><span class="eyebrow">SHOWDAY TRAVEL · ${mode}</span><h1>${cityOf().name} ${durText()} 여행</h1><p>${P_.S.date?dayLabel(P_.S,1)+' 출발 · ':''}${P_.x.H.name} 기준 · 예약 조건을 반영한 일정</p></div><div class="dashboard-actions"><button class="chip" data-act="jump" data-v="time">출발·귀가 시간 수정</button><button class="chip" data-act="sheet" data-v="menu">일정 수정</button></div></div><div class="dashboard-warning">안내 · 장소 정보와 이동시간·요금은 샘플 데이터 기반 추정입니다. 방문 전 운영시간과 실제 경로를 확인해 주세요.</div><div class="dashboard-day">${days}</div><div class="res two unified" data-t="plan">${viewPlan()}</div><section class="dashboard-finance"><div class="dashboard-finance-head"><div><span class="eyebrow">TRIP BUDGET</span><h2>전체 여행 비용과 지출 관리</h2></div><span>총 예상 약 ${man(P_.T.total)} · 1인당 약 ${man(P_.per)}</span></div><details><summary>비용 상세 · 절약 대안 · 지출 기록 펼치기</summary><div class="dashboard-cost-detail">${viewCost()}</div></details></section></section>`;
+}
 function homeRes(){const q=UI.hq.trim();if(!q)return '';
   const out=[],names={seoul:['서울'],suwon:['수원','경기'],busan:['부산'],daegu:['대구'],gyeongju:['경주'],yeosu:['여수'],sokcho:['속초','설악'],jeju:['제주'],gangneung:['강릉','강원'],jeonju:['전주','전라']};
   Object.keys(CITIES).forEach(id=>{if((names[id]||[]).some(n=>n.includes(q)||q.includes(n))||CITIES[id].name.includes(q))out.push(`<button class="opt" data-act="sgo" data-c="${id}"><b>${CITIES[id].name}</b><small>여행지로 시작하기</small></button>`);});
