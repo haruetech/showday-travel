@@ -11,7 +11,7 @@ ${UI.edit?'<button class="btn ghost" style="width:100%;margin-top:6px" data-act=
 ${P_.excluded.length?`<div class="sec"><h2>일정에 못 넣은 곳</h2><ul class="notes">${P_.excluded.map(e=>`<li><b>${e.p.name}</b> · ${e.why}</li>`).join('')}</ul></div>`:''}
 ${tourSec()}${evtSec(d)}
 <ul class="notes"><li>운영시간·휴무·예약 필요 여부는 방문 전에 꼭 확인해 주세요.</li><li>거리·시간·요금은 직선거리 기반 추정이에요. 확정 값이 아니에요.</li></ul></div>
-<div class="mappane">${UI.travel?tvMap(d):''}<div class="mapbox">${mapSvg(d)}</div><p class="hint">카카오맵(map.showday.kr) 연결 전의 이동 경로 개략도예요. 번호를 누르면 일정과 연결돼요.</p>${legendHtml(d)}${selInfo(d)}${costMini()}</div>`;}
+<div class="mappane">${UI.travel?tvMap(d):''}<div class="mapbox">${mapSvg(d)}</div><p class="hint">${window.SD_KAKAO?'번호를 누르면 일정과 연결돼요. 파란 점선은 순서대로 이은 선이라 실제 길과 달라요.':'카카오맵(map.showday.kr) 연결 전의 이동 경로 개략도예요. 번호를 누르면 일정과 연결돼요.'}</p>${legendHtml(d)}${selInfo(d)}${costMini()}</div>`;}
 function costMini(){const P_=PLAN,T=P_.T,list=Object.values(P_.cats).filter(c=>c.v>0);
   return `<div class="costmini sum"><div class="sub">비용 요약 (추정)</div><div class="big" style="font-size:24px">약 ${man(T.total)}</div><div class="kv" style="margin-top:8px">${list.map(c=>`<span class="k">${c.label}</span><span class="v">${won(c.v)}</span>`).join('')}</div>${capMsg(P_)}<button class="btn ghost" style="width:100%;margin-top:10px" data-act="rtab" data-v="cost">자세히 · 절약 대안</button></div>`;}
 function strip(){const P_=PLAN,T=P_.T;let st='';

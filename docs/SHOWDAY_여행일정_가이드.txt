@@ -196,3 +196,7 @@ v86: 배포 주소 travel.showday.kr 확정 - 저장소 루트에 CNAME 파일 �
 v87: 디자인 정리 - 그림 전면 교체(은은한 톤 그라데이션+선 아이콘, js/art2.js 에서만 수정), 테마 아이콘 둥근 사각, PC는 2단 구성 + 화면 크기에 맞춰 확대(1100px 1.2배/1500px 1.4배/1900px 1.6배), "시제품" 표시 삭제(데이터는 계속 샘플 표기)
 
 v88: Next.js + Supabase 골격(showday-travel-next) - 지금 앱을 그대로 / 에서 실행, /api/track 클릭 기록, supabase/migrations/001_travel_schema.sql(travel_events, travel_trips, travel_places, travel_stays + RLS). 여행 전용 새 Supabase 프로젝트 사용. 화면은 이후 React로 단계적 이식
+v89: ChatGPT 수정안 검토 반영 - refinement.css(포커스 표시·움직임 줄이기·호버·글줄 정리)와 클릭 처리 보강만 채택. 파란색 브랜드색 변경, PC 확대 해제, 모바일 한 화면 크기 되돌림은 채택하지 않음
+v90: 일정 "지도" 탭에 카카오맵 연결 - 번호 마커(누르면 일정과 연결)·순서 선·내 위치 점. 키가 없거나 불러오기 실패 시 기존 개략도로 자동 대체. 파일: js/kmap.js(신규), app/kakao-config.js/route.ts(신규), plan-view.js, style.css, app.html
+  설정: 카카오 개발자 콘솔 앱의 JavaScript 키를 Vercel 환경변수 NEXT_PUBLIC_KAKAO_JS_KEY 로 입력 후 Redeploy. 콘솔 > 플랫폼 > Web 에 사이트 도메인 등록 필수(travel.showday.kr, showday-travel-*.vercel.app). 미등록 시 지도가 안 뜨고 개략도로 대체됨.
+  사용 API: 카카오맵 JavaScript SDK(무료 한도 내). 한계: 선은 직선 연결(실제 길 아님). 길찾기 실제 경로는 카카오모빌리티 길찾기 API 연동 시 가능.
