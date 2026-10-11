@@ -487,3 +487,17 @@ body.big .leg,body.big .alts{font-size:14px}
 
 /* v98 홈 칩 아이콘(이모지 → 선 아이콘) */
 .hchips i svg{width:22px;height:22px;color:var(--accent);display:block}
+
+/* v99 그림·아이콘 정리: 낮은 채도, 얇은 그림자, 선 아이콘 */
+.hhero,.sthero{box-shadow:0 4px 14px rgba(40,38,110,.14)}
+.hhero .htx,.sthero .sttx,.htile .tx,.hs .tx{text-shadow:0 1px 4px rgba(10,12,40,.35)}
+.htile{box-shadow:0 3px 10px rgba(40,38,110,.12)}.htile::after{background:linear-gradient(180deg,rgba(10,16,40,0) 50%,rgba(10,16,40,.5) 100%)}
+.htile.wide::after{background:linear-gradient(90deg,rgba(10,22,32,.45) 0,rgba(10,22,32,0) 62%)}
+.hquick{box-shadow:0 3px 10px rgba(74,71,184,.25)}
+.hs{box-shadow:0 3px 10px rgba(40,38,110,.14)}.hs.now{box-shadow:0 0 0 2px var(--accent),0 4px 12px rgba(74,71,184,.28)}
+.hth i.g3{background:#F0EFFB!important;box-shadow:none!important;border:1px solid #DFDDF6;color:#4A47B8}
+.hth i.g3 .tic{width:56%;height:56%;filter:none;color:#4A47B8}
+.hth button:hover i.g3{background:#E6E4F8!important}
+.tcb{background:#ECEBFA!important;box-shadow:none!important;color:#4A47B8}.tcb .tic{color:#4A47B8}
+.sthero.th .them{color:#fff;filter:none}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hth i.g3,:root:not([data-theme="light"]) .tcb{background:#262649!important;border-color:#34346A;color:#B7B4FA}:root:not([data-theme="light"]) .hth i.g3 .tic,:root:not([data-theme="light"]) .tcb .tic{color:#B7B4FA}}
