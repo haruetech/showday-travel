@@ -1,0 +1,57 @@
+/* SHOWDAY v11 — single-viewport, editorial travel home */
+body:has(.sd8-home){margin:0;padding-bottom:0!important;background:#f5f6f3;overflow-x:hidden}
+body:has(.sd8-home) .wrap.home{max-width:1320px!important}
+body:has(.sd8-home) header.top{background:#f5f6f3;padding-top:7px;padding-bottom:7px;border-bottom:1px solid #e8eae6}
+body:has(.sd8-home) .sd8-home{height:calc(100dvh - var(--hh, 55px) - 10px);min-height:0;display:flex;flex-direction:column;overflow:hidden}
+body:has(.sd8-home) .sd8-stage{height:100%;min-height:0;flex:1;margin:9px 0 0;border-radius:22px;background:#123e38;overflow:hidden;isolation:isolate}
+body:has(.sd8-home) .sd8-photo{background-image:linear-gradient(90deg,rgba(7,34,32,.24),rgba(10,45,38,.08)),url('https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1900&q=85');background-position:center 53%}
+body:has(.sd8-home) .sd8-stage:after{background:linear-gradient(90deg,rgba(4,29,29,.78),rgba(8,37,34,.40) 51%,rgba(7,34,29,.13))}
+body:has(.sd8-home) .sd8-stage-inner{height:100%;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,405px);align-items:center;gap:clamp(15px,3vw,46px);padding:clamp(12px,2.7vh,34px) clamp(20px,4vw,62px)}
+body:has(.sd8-home) .sd8-intro{padding:0;min-width:0;color:#fff}
+body:has(.sd8-home) .sd8-kicker{font-size:11px;letter-spacing:.24em;color:#e5f4ea}
+body:has(.sd8-home) .sd8-intro h1{font-size:clamp(33px,4.1vw,64px);line-height:1.23;letter-spacing:-.075em;color:white;margin:clamp(10px,2vh,22px) 0 13px}
+body:has(.sd8-home) .sd8-intro h1 em{color:#d9efdc}
+body:has(.sd8-home) .sd8-intro p{font-size:clamp(12px,1.1vw,15px);line-height:1.8;margin:0 0 14px;color:#f3f7f4}
+body:has(.sd8-home) .sd8-caption{font-size:11px;letter-spacing:.02em;color:#e5f2e8}
+body:has(.sd8-home) .sd8-panel{width:100%;min-width:0;margin:0;background:rgba(255,255,255,.97);border:1px solid rgba(255,255,255,.9);border-radius:19px;box-shadow:0 20px 55px #031d1b45;padding:clamp(13px,2vh,23px) clamp(13px,2vw,23px);color:#1f342b}
+body:has(.sd8-home) .sd8-panel-head{margin-bottom:10px}
+body:has(.sd8-home) .sd8-panel h2{font-size:clamp(16px,1.5vw,20px);margin:3px 0 0}
+body:has(.sd8-home) .sd8-small{font-size:9px}
+body:has(.sd8-home) .sd8-modes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+body:has(.sd8-home) .sd8-mode{min-height:clamp(73px,11vh,92px);display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:11px;border:1px solid #e6eae5;border-radius:12px;background:#fff}
+body:has(.sd8-home) .sd8-mode:hover,body:has(.sd8-home) .sd8-mode:focus-visible{background:#eef7f0;border-color:#8bb49b}
+body:has(.sd8-home) .sd8-num{font-size:10px;color:#658975}
+body:has(.sd8-home) .sd8-mode-copy strong{font-size:clamp(11px,1.03vw,13px);line-height:1.35;color:#1e392d}
+body:has(.sd8-home) .sd8-mode-copy small{font-size:10px;line-height:1.35;color:#728779}
+body:has(.sd8-home) .sd8-arrow{display:none}
+body:has(.sd8-home) .sd8-divider{margin:12px 0 9px;font-size:10px;color:#728578}
+body:has(.sd8-home) .sd8-people{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+body:has(.sd8-home) .sd8-person{min-width:0;padding:10px 2px;border-radius:9px;font-size:11px;line-height:1.25;white-space:normal;background:#f6f8f5;color:#345a46}
+body:has(.sd8-home) .sd8-person span{display:none}
+body:has(.sd8-home) .sd8-quick{margin-top:11px;padding:12px 14px;background:#24563f;border-radius:10px;font-size:13px}
+body:has(.sd8-home) .sd8-under,body:has(.sd8-home) .sd-disclaimer,body:has(.sd8-home) .sd-saved,body:has(.sd8-home) .dcard{display:none!important}
+@media(max-width:850px){body:has(.sd8-home) .sd8-stage-inner{grid-template-columns:minmax(0,1fr) minmax(305px,390px);padding:15px 20px;gap:15px}body:has(.sd8-home) .sd8-intro h1{font-size:clamp(30px,4.3vw,44px)}}
+@media(max-width:650px){
+ body:has(.sd8-home){padding-inline:8px}
+ body:has(.sd8-home) .sd8-home{height:calc(100dvh - var(--hh, 52px) - 5px)}
+ body:has(.sd8-home) .sd8-stage{margin-top:4px;border-radius:15px}
+ body:has(.sd8-home) .sd8-stage-inner{display:flex;flex-direction:column;justify-content:center;gap:clamp(9px,2vh,17px);padding:clamp(12px,2.5vh,24px) 13px}
+ body:has(.sd8-home) .sd8-intro{width:100%;flex:0 0 auto}
+ body:has(.sd8-home) .sd8-kicker{font-size:9px}
+ body:has(.sd8-home) .sd8-intro h1{font-size:clamp(27px,7.5vw,39px);margin:7px 0;line-height:1.2}
+ body:has(.sd8-home) .sd8-intro p{font-size:11px;line-height:1.6;margin:0}
+ body:has(.sd8-home) .sd8-caption{display:none}
+ body:has(.sd8-home) .sd8-panel{padding:clamp(11px,2vh,18px);border-radius:14px;flex:0 1 auto}
+ body:has(.sd8-home) .sd8-panel-head{margin-bottom:8px}
+ body:has(.sd8-home) .sd8-panel h2{font-size:17px}
+ body:has(.sd8-home) .sd8-modes{gap:6px}
+ body:has(.sd8-home) .sd8-mode{min-height:clamp(67px,10.2vh,83px);padding:8px 9px;gap:3px}
+ body:has(.sd8-home) .sd8-mode-copy strong{font-size:11px}
+ body:has(.sd8-home) .sd8-mode-copy small{font-size:9px}
+ body:has(.sd8-home) .sd8-divider{margin:10px 0 7px;font-size:9px}
+ body:has(.sd8-home) .sd8-person{font-size:10px;padding:9px 2px}
+ body:has(.sd8-home) .sd8-quick{margin-top:9px;padding:11px;font-size:12px}
+}
+@media(max-width:650px) and (max-height:740px){body:has(.sd8-home) .sd8-stage-inner{gap:7px;padding:8px 11px}body:has(.sd8-home) .sd8-intro h1{font-size:clamp(23px,6.4vw,30px);margin:4px 0}body:has(.sd8-home) .sd8-intro p{font-size:10px}body:has(.sd8-home) .sd8-panel{padding:9px}body:has(.sd8-home) .sd8-mode{min-height:57px;padding:6px 8px}body:has(.sd8-home) .sd8-mode-copy small{display:none}body:has(.sd8-home) .sd8-divider{margin:7px 0 5px}body:has(.sd8-home) .sd8-person{padding:7px 1px}body:has(.sd8-home) .sd8-quick{margin-top:7px;padding:9px}}
+@media(max-width:650px) and (max-height:560px){body:has(.sd8-home) .sd8-intro p{display:none}body:has(.sd8-home) .sd8-panel h2{font-size:14px}body:has(.sd8-home) .sd8-mode{min-height:46px;padding:4px 6px}body:has(.sd8-home) .sd8-num{display:none}body:has(.sd8-home) .sd8-person{padding:5px 1px}body:has(.sd8-home) .sd8-quick{padding:7px}}
+@media(max-height:440px){body:has(.sd8-home) .sd8-home{height:auto;min-height:calc(100dvh - var(--hh,52px))}body:has(.sd8-home) .sd8-stage{min-height:380px}}
