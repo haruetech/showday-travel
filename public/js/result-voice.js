@@ -14,20 +14,24 @@ function homeRes(){const q=UI.hq.trim();if(!q)return '';
   if(!out.length)return `<p class="hint">'${esc(q)}'은(는) 아직 샘플 데이터에 없어요. 지금은 서울·수원·부산·대구·경주·여수·속초·제주·강릉·전주만 시험 중이에요.</p>`;
   return '<div class="opts" style="margin-top:8px">'+out.slice(0,8).join('')+'</div>';}
 function viewHome(){const saved=ls.get('showday_trips',[]);
- const choices=[
-  ['dates','📅','휴가 날짜가 정해졌어요','날짜·예산에 맞는 여행지 추천','vacation'],
-  ['region','📍','가고 싶은 지역이 있어요','원하는 지역의 숙소·동선 추천','region'],
-  ['booked','🎫','호텔·기차를 예약했어요','예약시간을 지키며 일정 완성','booked'],
-  ['none','✨','아직 정한 게 없어요','취향부터 선택하고 여행 추천','free']];
- return `${ART_DEFS}<section class="sd-hero"><div class="sd-hero-visual" aria-hidden="true">${HOME_HERO}</div><div class="sd-hero-copy"><span class="sd-eyebrow">SHOWDAY · SMART TRAVEL PLANNER</span><h1>여행은 설레게,<br><em>계획은 간편하게.</em></h1><p>정해진 예약은 그대로. 비어 있는 일정은 나답게.<br>여행 준비 상태만 선택하면 시작할 수 있어요.</p><span class="sd-hero-pill">✦ 내 여행에 맞춰 일정·동선·비용 한 번에</span></div></section>
+ const starts=[['dates','날짜만 정했어요','휴가에 맞춰 추천'],['region','여행지는 정했어요','지역에 맞는 일정'],['booked','예약을 마쳤어요','호텔·기차 시간 반영'],['none','아직 고민 중이에요','취향부터 추천']];
+ const people=[['solo','혼자'],['couple','둘이'],['kids','아이와'],['parents','부모님과'],['group','친구·가족']];
+ return `<div class="sd8-home">
+ <section class="sd8-stage" aria-label="SHOWDAY 여행 계획 시작">
+  <div class="sd8-photo" aria-hidden="true"></div><div class="sd8-stage-inner">
+   <div class="sd8-intro"><span class="sd8-kicker"><span class="sd8-dot"></span> SHOWDAY TRAVEL</span><h1>여행은 설레게,<br><em>계획은 간편하게.</em></h1><p>정해진 건 그대로, 고민되는 건 추천받으세요.<br>내 여행에 맞는 일정을 쉽게 시작할 수 있어요.</p><span class="sd8-caption">당일 여행부터 긴 휴가까지 · 자유로운 여행 계획</span></div>
+   <div class="sd8-panel"><div class="sd8-panel-head"><div><span class="sd8-small">START YOUR JOURNEY</span><h2>어떤 여행을 계획하세요?</h2></div><span class="sd8-step">01 / 02</span></div>
+   <div class="sd8-modes">${starts.map(([v,t,d],i)=>`<button class="sd8-mode" data-act="begin" data-v="${v}"><span class="sd8-num">0${i+1}</span><span class="sd8-mode-copy"><strong>${t}</strong><small>${d}</small></span><span class="sd8-arrow">↗</span></button>`).join('')}</div>
+   <div class="sd8-divider"><span>또는 누구와 떠날지 먼저 선택해 보세요</span></div>
+   <div class="sd8-people">${people.map(([v,t])=>`<button class="sd8-person" data-act="familyStart" data-v="${v}">${t}<span aria-hidden="true">↗</span></button>`).join('')}</div>
+   <button class="sd8-quick" data-act="quick">빠르게 여행 추천받기 <span>→</span></button>
+   </div></div>
+ </section>
  ${draftCard()}
- <section class="sd-start"><div class="sd-section-title"><div><span class="sd-step">STEP 01</span><h2>어떤 여행을 준비 중이세요?</h2><p>지금 상황과 가장 가까운 항목을 선택하세요.</p></div><span class="sd-count">4가지 시작 방법</span></div>
- <div class="sd-choice-grid">${choices.map(([v,ico,title,desc,cls],i)=>`<button class="sd-choice sd-${cls}" data-act="begin" data-v="${v}"><span class="sd-choice-icon">${ico}</span><span class="sd-choice-body"><strong>${title}</strong><small>${desc}</small></span><span class="sd-choice-arrow">↗</span></button>`).join('')}</div>
- <div class="sd-quick-line"><span>💡 몇 번만 눌러 추천받고 싶다면?</span><button data-act="quick">빠른 여행 추천 →</button></div></section>
- <section class="sd-explore"><div class="sd-section-title"><div><span class="sd-step">DISCOVER</span><h2>여행 아이디어가 필요하세요?</h2><p>원하는 테마를 골라 여행을 시작해 보세요.</p></div></div><div class="sd-discover-grid"><button class="sd-photo-card sd-nature" data-act="begin" data-v="none"><span>자연 속에서 쉬기</span><small>힐링 여행 추천 ↗</small></button><button class="sd-photo-card sd-city" data-act="begin" data-v="dates"><span>휴가에 맞는 여행지</span><small>날짜 기준 추천 ↗</small></button><button class="sd-photo-card sd-stay" data-act="stays"><span>특별한 숙소 찾기</span><small>숙소·캠핑 둘러보기 ↗</small></button></div></section>
- <section class="sd-more"><details><summary>계절별 · 테마별 여행도 살펴보기 <span>⌄</span></summary><div class="sd-more-content">${seasonRow()}${themeRow()}</div></details></section>
- ${saved.length?`<section class="sd-saved"><h2>내가 저장한 여행</h2>${saved.map((t,i)=>`<div class="trip"><span><b>${esc(t.name)}</b><span class="meta">${t.at}</span></span><span class="tb"><button class="btn sm ghost" data-act="loadTrip" data-v="${i}">열기</button><button class="lnk" data-act="delTrip" data-v="${i}">삭제</button></span></div>`).join('')}</section>`:''}
- <p class="sd-disclaimer">※ 이동시간·요금은 추정값이며 실제 예약정보 및 교통상황에 따라 달라질 수 있습니다.</p>`;}
+ <div class="sd8-under"><span>어디든 자유롭게 · 예약된 시간도 반영 · 일정·동선·예산 한 번에</span><div><button data-act="theme" data-v="nature">테마별 여행 ↗</button><button data-act="stays">숙소·캠핑 ↗</button></div></div>
+ ${saved.length?`<section class="sd-saved"><h2>저장한 여행</h2>${saved.map((t,i)=>`<div class="trip"><span><b>${esc(t.name)}</b><span class="meta">${t.at}</span></span><span class="tb"><button class="btn sm ghost" data-act="loadTrip" data-v="${i}">열기</button><button class="lnk" data-act="delTrip" data-v="${i}">삭제</button></span></div>`).join('')}</section>`:''}
+ <p class="sd-disclaimer">※ 여행지·경로·비용 추천은 제공 데이터와 추정값을 기준으로 합니다.</p></div>`;
+}
 
 function planText(){const P_=PLAN,x=P_.x;let t=`SHOWDAY 여행일정 · ${cityOf().name} ${durText()}\n${x.H.name} 기준 / 성인 ${S.adults} 어린이 ${S.kids} / ${MLAB[S.mode]}\n총 약 ${man(P_.T.total)} (추정 ${man(P_.T.lo)}~${man(P_.T.hi)}), 1인당 약 ${won(P_.per)}\n`;
   P_.days.forEach(d=>{t+=`\n[${d.n}일차${S.date?' '+dayLabel(S,d.n):''}] 하루 약 ${won(d.sum)}\n`;d.ev.forEach(e=>{if(e.leg)t+=`   > ${e.leg.use==='car'?MLAB[S.mode==='rental'?'rental':'car']:MLAB[e.leg.use]} 약 ${e.leg.km}km ${e.leg.min}분 ${legCost(e.leg)}${e.leg.alts[e.leg.use].detail?' ('+e.leg.alts[e.leg.use].detail+')':''}\n`;t+=`${hm(e.t0)} ${e.title}${e.cost?' (약 '+won(e.cost)+')':''}\n`;});});
