@@ -45,7 +45,8 @@ document.addEventListener('click',ev=>{const target=ev.target instanceof Element
    case 'big':UI.big=!UI.big;ls.set('showday_big',UI.big);render(true);break;
    case 'start':newTrip();if(v==='wish')UI.wishFirst=true;else{S.type=v;S.nights=v==='day'?0:2;UI.known.add('type');}UI.view='wizard';UI.step=active()[0].id;render();window.scrollTo(0,0);break;
    case 'quick':newTrip();S.nights=2;UI.quick=true;UI.view='wizard';UI.step='dest';render();window.scrollTo(0,0);break;
-   case 'begin':{newTrip();UI.start=v;UI.view='wizard';
+   case 'begin':{newTrip();UI.start=v;UI.setupDest='';UI.setupHotel='';UI.setupMust='';UI.setupMore=false;UI.view='setup';render();window.scrollTo(0,0);break;}
+   case 'beginOld':{newTrip();UI.start=v;UI.view='wizard';
     if(v==='dates'){UI.rec=true;UI.ids=['date','who','people','kidx','int','origin','budget','recpick'];S.nights=2;S.undecided=true;UI.step='date';}
     else if(v==='none'){UI.rec=true;UI.ids=['budget','int','who','people','kidx','dur','origin','recpick'];S.nights=2;UI.step='budget';}
     else if(v==='booked'){UI.booked=true;S.booked=true;S.fixedTimes=true;UI.ids=['dest','type','date','origin','time','stay','who','people','kidx','wish','mode','int','meal','access','budget','pace','confirm'];UI.step='dest';}

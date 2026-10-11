@@ -55,6 +55,7 @@ function render(keepScroll){setHH();const y=window.scrollY;
   else if(UI.view==='theme'){prog.hidden=true;app.innerHTML=BACKROW+viewTheme();bar.innerHTML='';$('#bar').hidden=true;}
   else if(UI.view==='season'){prog.hidden=true;app.innerHTML=BACKROW+viewSeason();bar.innerHTML='';$('#bar').hidden=true;}
   else if(UI.view==='stays'){prog.hidden=true;app.innerHTML=BACKROW+viewStays();bar.innerHTML=pickBar();$('#bar').hidden=!bar.innerHTML;}
+  else if(UI.view==='setup'){prog.hidden=true;app.innerHTML=setupView();bar.innerHTML='';$('#bar').hidden=true;}
   else if(UI.view==='wizard'){$('#bar').hidden=false;const a=active(),st=curStep(),i=Math.max(0,a.findIndex(s=>s.id===st.id));
     prog.hidden=false;prog.firstElementChild.style.width=((i+1)/a.length*100)+'%';
     app.innerHTML=`<p class="qn">${i+1} / ${a.length}</p><h1 style="margin-top:6px">${typeof st.q==='function'?st.q():st.q}</h1>${st.sub?`<p class="lead">${st.sub}</p>`:'<div style="height:8px"></div>'}${st.body()}`;
