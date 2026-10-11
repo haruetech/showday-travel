@@ -501,3 +501,21 @@ body.big .leg,body.big .alts{font-size:14px}
 .tcb{background:#ECEBFA!important;box-shadow:none!important;color:#4A47B8}.tcb .tic{color:#4A47B8}
 .sthero.th .them{color:#fff;filter:none}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hth i.g3,:root:not([data-theme="light"]) .tcb{background:#262649!important;border-color:#34346A;color:#B7B4FA}:root:not([data-theme="light"]) .hth i.g3 .tic,:root:not([data-theme="light"]) .tcb .tic{color:#B7B4FA}}
+
+/* v100 PC 메인: 화면 높이에 맞춰 한 화면에 (확대 배율 --z 반영) */
+:root{--z:1}@media(min-width:1100px){:root{--z:1.2}}@media(min-width:1500px){:root{--z:1.4}}@media(min-width:1900px){:root{--z:1.6}}
+@media(min-width:900px){
+ .hmain{display:grid;grid-template-columns:1fr 1.08fr;gap:0 30px;align-items:stretch;height:calc((100dvh - 30px)/var(--z) - 160px);min-height:300px}
+ .hmain .hcol{display:flex;flex-direction:column;gap:8px;min-height:0}
+ .hmain .hcol>*{flex:none;margin-top:0;margin-bottom:0}
+ .hmain .hcol:first-child .hhero{flex:1 1 0;height:auto;min-height:70px;border-radius:20px}
+ .hmain .hhero h1{font-size:clamp(24px,4.2vh,32px)}
+ .hmain .hquick{min-height:clamp(46px,8vh,60px)}
+ .hmain .hchips button{min-height:clamp(42px,7.5vh,54px)}
+ .hmain .htile.wide{height:clamp(54px,10vh,76px)}
+ .hmain .hcol:last-child .hseason{flex:1 1 0;min-height:110px}
+ .hmain .hcol:last-child .hs{aspect-ratio:auto;height:100%}
+ .hmain .hlab{margin:2px 2px 0}
+ .hmain .hth{gap:6px 4px}.hmain .hth i{width:clamp(40px,7.4vh,56px);height:clamp(40px,7.4vh,56px);border-radius:16px}.hmain .hth span{font-size:12.5px}.hmain .hth button{padding:2px 0}
+ .hfoot{margin:6px 2px 0}
+}
