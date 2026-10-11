@@ -1,0 +1,11 @@
+SHOWDAY 전체 프로젝트 v10
+
+수정: package.json에 lucide-react 의존성 추가.
+기존 package-lock.json은 신규 패키지와 불일치하므로 제외했습니다.
+배포시 npm install이 최신 lock을 재생성하도록 합니다.
+
+중요: 제공받은 원본 ZIP에는 lib/site.tsx가 없었습니다.
+현재 GitHub 저장소의 lib/site.tsx가 별도로 존재한다면 전체 ZIP 덮어쓰기로 파일이 삭제될 수 있으므로 기존 파일을 백업하고 변경사항을 병합하세요.
+
+확인: npm install && npm run build
+이 실행 환경에서는 npm 레지스트리 네트워크 접근이 되지 않아 실제 빌드 검증은 못 했습니다.
