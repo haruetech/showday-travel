@@ -484,3 +484,6 @@ body.big .leg,body.big .alts{font-size:14px}
 .bar .btn.ghost{font-size:13px;font-weight:600}
 @media(min-width:700px){.bar .in{max-width:520px}.bar .btn{flex:1 1 0}.bar .btn.ghost{flex:0 0 auto}}
 .tvstart .btn{min-height:44px;font-size:15px}
+
+/* v98 홈 칩 아이콘(이모지 → 선 아이콘) */
+.hchips i svg{width:22px;height:22px;color:var(--accent);display:block}

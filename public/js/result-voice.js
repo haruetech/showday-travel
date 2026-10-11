@@ -14,24 +14,15 @@ function homeRes(){const q=UI.hq.trim();if(!q)return '';
   if(!out.length)return `<p class="hint">'${esc(q)}'은(는) 아직 샘플 데이터에 없어요. 지금은 서울·수원·부산·대구·경주·여수·속초·제주·강릉·전주만 시험 중이에요.</p>`;
   return '<div class="opts" style="margin-top:8px">'+out.slice(0,8).join('')+'</div>';}
 function viewHome(){const saved=ls.get('showday_trips',[]);
- const starts=[['dates','날짜만 정했어요','휴가에 맞춰 추천'],['region','여행지는 정했어요','지역에 맞는 일정'],['booked','예약을 마쳤어요','호텔·기차 시간 반영'],['none','아직 고민 중이에요','취향부터 추천']];
- const people=[['solo','혼자'],['couple','둘이'],['kids','아이와'],['parents','부모님과'],['group','친구·가족']];
- return `<div class="sd8-home">
- <section class="sd8-stage" aria-label="SHOWDAY 여행 계획 시작">
-  <div class="sd8-photo" aria-hidden="true"></div><div class="sd8-stage-inner">
-   <div class="sd8-intro"><span class="sd8-kicker"><span class="sd8-dot"></span> SHOWDAY TRAVEL</span><h1>여행은 설레게,<br><em>계획은 간편하게.</em></h1><p>정해진 건 그대로, 고민되는 건 추천받으세요.<br>내 여행에 맞는 일정을 쉽게 시작할 수 있어요.</p><span class="sd8-caption">당일 여행부터 긴 휴가까지 · 자유로운 여행 계획</span></div>
-   <div class="sd8-panel"><div class="sd8-panel-head"><div><span class="sd8-small">START YOUR JOURNEY</span><h2>어떤 여행을 계획하세요?</h2></div><span class="sd8-step">01 / 02</span></div>
-   <div class="sd8-modes">${starts.map(([v,t,d],i)=>`<button class="sd8-mode" data-act="begin" data-v="${v}"><span class="sd8-num">0${i+1}</span><span class="sd8-mode-copy"><strong>${t}</strong><small>${d}</small></span><span class="sd8-arrow">↗</span></button>`).join('')}</div>
-   <div class="sd8-divider"><span>또는 누구와 떠날지 먼저 선택해 보세요</span></div>
-   <div class="sd8-people">${people.map(([v,t])=>`<button class="sd8-person" data-act="familyStart" data-v="${v}">${t}<span aria-hidden="true">↗</span></button>`).join('')}</div>
-   <button class="sd8-quick" data-act="quick">빠르게 여행 추천받기 <span>→</span></button>
-   </div></div>
- </section>
- ${draftCard()}
- <div class="sd8-under"><span>어디든 자유롭게 · 예약된 시간도 반영 · 일정·동선·예산 한 번에</span><div><button data-act="theme" data-v="nature">테마별 여행 ↗</button><button data-act="stays">숙소·캠핑 ↗</button></div></div>
- ${saved.length?`<section class="sd-saved"><h2>저장한 여행</h2>${saved.map((t,i)=>`<div class="trip"><span><b>${esc(t.name)}</b><span class="meta">${t.at}</span></span><span class="tb"><button class="btn sm ghost" data-act="loadTrip" data-v="${i}">열기</button><button class="lnk" data-act="delTrip" data-v="${i}">삭제</button></span></div>`).join('')}</section>`:''}
- <p class="sd-disclaimer">※ 여행지·경로·비용 추천은 제공 데이터와 추정값을 기준으로 합니다.</p></div>`;
-}
+  const tile=(act,v,k,t,d)=>`<button class="htile" data-act="${act}"${v?` data-v="${v}"`:''}>${HOME_ART[k]}<span class="tx"><b>${t}</b><small>${d}</small></span></button>`;
+  return `${ART_DEFS}<div class="hmain"><div class="hcol">
+<div class="hhero">${HOME_HERO}<div class="htx"><h1>어디로 떠나볼까요?</h1><span>눌러서 고르면 일정·경비까지 계획해요</span></div></div>${draftCard()}
+<button class="hquick" data-act="quick">${HOME_ART.quick}<span><b>3번만 눌러 바로 추천</b><small>정한 게 없어도 괜찮아요</small></span><em>›</em></button>
+<div class="hchips"><button data-act="begin" data-v="region"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></i><b>갈 곳 있어요</b><small>숙소·교통·일정</small></button><button data-act="begin" data-v="dates"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></i><b>날짜 정했어요</b><small>여행지 추천</small></button><button data-act="begin" data-v="booked"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg></i><b>예약 마쳤어요</b><small>시간 그대로 구성</small></button></div>
+<button class="htile wide" data-act="stays">${HOME_ART.stays}<span class="tx"><b>숙소·캠핑 찾기</b><small>한옥·펜션·글램핑·캠핑·휴양림</small></span></button>
+</div><div class="hcol">${seasonRow()}${themeRow()}</div></div>
+${saved.length?`<p class="hlab">내 여행</p>${saved.map((t,i)=>`<div class="trip"><span><b>${esc(t.name)}</b><span class="meta">${t.at}</span></span><span class="tb"><button class="btn sm ghost" data-act="loadTrip" data-v="${i}">열기</button><button class="lnk" data-act="delTrip" data-v="${i}">삭제</button></span></div>`).join('')}`:''}
+<p class="hfoot">거리·시간·요금은 추정값이에요. 작성 중인 내용은 이 기기에 자동 임시저장돼요.</p>`;}
 
 function planText(){const P_=PLAN,x=P_.x;let t=`SHOWDAY 여행일정 · ${cityOf().name} ${durText()}\n${x.H.name} 기준 / 성인 ${S.adults} 어린이 ${S.kids} / ${MLAB[S.mode]}\n총 약 ${man(P_.T.total)} (추정 ${man(P_.T.lo)}~${man(P_.T.hi)}), 1인당 약 ${won(P_.per)}\n`;
   P_.days.forEach(d=>{t+=`\n[${d.n}일차${S.date?' '+dayLabel(S,d.n):''}] 하루 약 ${won(d.sum)}\n`;d.ev.forEach(e=>{if(e.leg)t+=`   > ${e.leg.use==='car'?MLAB[S.mode==='rental'?'rental':'car']:MLAB[e.leg.use]} 약 ${e.leg.km}km ${e.leg.min}분 ${legCost(e.leg)}${e.leg.alts[e.leg.use].detail?' ('+e.leg.alts[e.leg.use].detail+')':''}\n`;t+=`${hm(e.t0)} ${e.title}${e.cost?' (약 '+won(e.cost)+')':''}\n`;});});
@@ -56,10 +47,10 @@ function render(keepScroll){setHH();const y=window.scrollY;
   wrap.classList.toggle('wide',UI.view==='result');wrap.classList.toggle('home',UI.view==='home');$('#homebtn').hidden=UI.view==='home';$('#backbtn').hidden=['home','theme','season','stays'].includes(UI.view);
   document.body.classList.toggle('big',!!UI.big);$('#bigbtn').setAttribute('aria-pressed',!!UI.big);
   if(UI.view==='home'){prog.hidden=true;app.innerHTML=viewHome();bar.innerHTML='';$('#bar').hidden=true;}
+  else if(UI.view==='setup'){prog.hidden=true;app.innerHTML=setupView();bar.innerHTML='';$('#bar').hidden=true;}
   else if(UI.view==='theme'){prog.hidden=true;app.innerHTML=BACKROW+viewTheme();bar.innerHTML='';$('#bar').hidden=true;}
   else if(UI.view==='season'){prog.hidden=true;app.innerHTML=BACKROW+viewSeason();bar.innerHTML='';$('#bar').hidden=true;}
   else if(UI.view==='stays'){prog.hidden=true;app.innerHTML=BACKROW+viewStays();bar.innerHTML=pickBar();$('#bar').hidden=!bar.innerHTML;}
-  else if(UI.view==='setup'){prog.hidden=true;app.innerHTML=setupView();bar.innerHTML='';$('#bar').hidden=true;}
   else if(UI.view==='wizard'){$('#bar').hidden=false;const a=active(),st=curStep(),i=Math.max(0,a.findIndex(s=>s.id===st.id));
     prog.hidden=false;prog.firstElementChild.style.width=((i+1)/a.length*100)+'%';
     app.innerHTML=`<p class="qn">${i+1} / ${a.length}</p><h1 style="margin-top:6px">${typeof st.q==='function'?st.q():st.q}</h1>${st.sub?`<p class="lead">${st.sub}</p>`:'<div style="height:8px"></div>'}${st.body()}`;
